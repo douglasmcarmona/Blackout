@@ -19,6 +19,7 @@ class BLACKOUT_API ABlackoutCharacter : public ACharacter
 public:	
 	ABlackoutCharacter();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -38,10 +39,31 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> LookAroundAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> InteractAction;	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bInvertY = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	float EyesightZ = 50.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	float MaxInteractableDistance = 200.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
+	float InteractionRadius = 10.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TObjectPtr<AActor> ThisActor;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TObjectPtr<AActor> LastActor;
+	
 
 private:
 	void Move(const FInputActionValue& InputValue);
 	void LookAround(const FInputActionValue& InputValue);
+	void Interact();
+	bool IsInteractableActor(const AActor* Actor) const;
 };

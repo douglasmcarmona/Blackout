@@ -7,12 +7,12 @@
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BillboardComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "Interaction/InteractionInterface.h"
 
 // Sets default values
 ABlackoutCharacter::ABlackoutCharacter()
 { 	
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(GetRootComponent());
@@ -51,6 +51,14 @@ void ABlackoutCharacter::LookAround(const FInputActionValue& InputValue)
 	AddControllerPitchInput(bInvertY ? LookAroundDirection.Y : -LookAroundDirection.Y);
 }
 
+void ABlackoutCharacter::Interact()
+{
+	if (IsInteractableActor(ThisActor))
+	{
+		IInteractionInterface::Execute_Interact(ThisActor);
+	}
+}
+
 void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -59,5 +67,52 @@ void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this,  &ABlackoutCharacter::LookAround);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Interact);
 	}
+}
+
+void ABlackoutCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, EyesightZ);
+	const FVector TraceEnd = TraceStart + GetControlRotation().Vector() * MaxInteractableDistance;
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	const FCollisionShape SphereCollision = FCollisionShape::MakeSphere(InteractionRadius);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActors(ActorsToIgnore);	
+	
+	GetWorld()->SweepSingleByChannel(
+		HitResult,
+		TraceStart,
+		TraceEnd,
+		FQuat::Identity,
+		ECC_Visibility,
+		SphereCollision,
+		CollisionParams		
+		);
+
+	if (HitResult.bBlockingHit)
+	{
+		LastActor = ThisActor;
+		if (IsInteractableActor(HitResult.GetActor())) ThisActor = HitResult.GetActor();
+		else ThisActor = nullptr;
+
+		if (ThisActor != LastActor)
+		{
+			if (IsInteractableActor(LastActor)){ IInteractionInterface::Execute_Unhighlight(LastActor); }
+			if (IsInteractableActor(ThisActor)){ IInteractionInterface::Execute_Highlight(ThisActor); }
+		}
+	}
+	else
+	{
+		if (IsInteractableActor(LastActor)){ IInteractionInterface::Execute_Unhighlight(LastActor); }
+	}	
+}
+
+bool ABlackoutCharacter::IsInteractableActor(const AActor* Actor) const
+{
+	return Actor != nullptr && Actor->Implements<UInteractionInterface>();
 }

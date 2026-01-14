@@ -23,3 +23,18 @@ void AInteractableActor::Unhighlight_Implementation()
 	Mesh->SetRenderCustomDepth(false);
 	HideInteractWidget();
 }
+
+void AInteractableActor::Interact_Implementation()
+{
+	Unhighlight_Implementation();
+}
+
+bool AInteractableActor::IsPickable_Implementation() const
+{
+	return InteractionType >= EObjectInteraction::Pickable;
+}
+
+bool AInteractableActor::IsUsable_Implementation() const
+{
+	return InteractionType == EObjectInteraction::Usable;
+}

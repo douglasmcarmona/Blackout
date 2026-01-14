@@ -6,7 +6,6 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
-#include "Components/BillboardComponent.h"
 #include "Interaction/InteractionInterface.h"
 
 // Sets default values
@@ -18,12 +17,13 @@ ABlackoutCharacter::ABlackoutCharacter()
 	CameraComponent->SetupAttachment(GetRootComponent());
 	CameraComponent->bUsePawnControlRotation = true;
 
-	GrabbedObjectSocket = CreateDefaultSubobject<USceneComponent>("GrabbedObjectSocket");
-	GrabbedObjectSocket->SetupAttachment(GetRootComponent());
-	GrabbedObjectSocket->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
+	RightHand = CreateDefaultSubobject<USceneComponent>("RightHand");
+	RightHand->SetupAttachment(CameraComponent);
+	RightHand->SetRelativeLocation(FVector(60.f, 25.f, -20.f));
 
-	GrabbedObjectBillboard = CreateDefaultSubobject<UBillboardComponent>("GrabbedObjectBillboard");
-	GrabbedObjectBillboard->SetupAttachment(GrabbedObjectSocket);	
+	LeftHand = CreateDefaultSubobject<USceneComponent>("LeftHand");
+	LeftHand->SetupAttachment(CameraComponent);
+	LeftHand->SetRelativeLocation(FVector(60.f, -25.f, -20.f));
 }
 
 void ABlackoutCharacter::BeginPlay()
@@ -56,6 +56,25 @@ void ABlackoutCharacter::Interact()
 	if (IsInteractableActor(ThisActor))
 	{
 		IInteractionInterface::Execute_Interact(ThisActor);
+		if (IInteractionInterface::Execute_IsPickable(ThisActor))
+		{
+			FAttachmentTransformRules AttachmentTransformRules(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				false);
+			
+			switch (GetFreeHand())
+			{
+				case 0: case 2:
+					ThisActor->AttachToComponent(RightHand, AttachmentTransformRules);	
+				break;
+				case 1:
+					ThisActor->AttachToComponent(LeftHand, AttachmentTransformRules);
+				break;
+				default: break;
+			}
+		}
 	}
 }
 
@@ -115,4 +134,9 @@ void ABlackoutCharacter::Tick(float DeltaSeconds)
 bool ABlackoutCharacter::IsInteractableActor(const AActor* Actor) const
 {
 	return Actor != nullptr && Actor->Implements<UInteractionInterface>();
+}
+
+uint32 ABlackoutCharacter::GetFreeHand() const
+{
+	return (RightHand->GetNumChildrenComponents() > 0 ? 1 :0) | (LeftHand->GetNumChildrenComponents() > 0 ? 1 : 0) << 1;	
 }

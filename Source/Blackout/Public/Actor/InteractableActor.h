@@ -9,6 +9,14 @@
 
 #define CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE 250.f;
 
+UENUM(Blueprintable, BlueprintType)
+enum class EObjectInteraction : uint8
+{
+	Interactable,
+	Pickable,
+	Usable
+};
+
 UCLASS()
 class BLACKOUT_API AInteractableActor : public AActor, public IInteractionInterface
 {
@@ -18,6 +26,10 @@ public:
 	AInteractableActor();
 	virtual void Highlight_Implementation() override;
 	virtual void Unhighlight_Implementation() override;
+	virtual void Interact_Implementation() override;
+	virtual bool IsPickable_Implementation() const override;
+	virtual bool IsUsable_Implementation() const override;
+	
 
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Highlight")
@@ -32,4 +44,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EObjectInteraction InteractionType;
 };

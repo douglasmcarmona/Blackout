@@ -28,10 +28,10 @@ protected:
 	TObjectPtr<UCameraComponent> CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
-	TObjectPtr<USceneComponent> GrabbedObjectSocket;
+	TObjectPtr<USceneComponent> RightHand;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UBillboardComponent> GrabbedObjectBillboard;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
+	TObjectPtr<USceneComponent> LeftHand;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> MoveAction;
@@ -66,4 +66,5 @@ private:
 	void LookAround(const FInputActionValue& InputValue);
 	void Interact();
 	bool IsInteractableActor(const AActor* Actor) const;
+	uint32 GetFreeHand() const;
 };

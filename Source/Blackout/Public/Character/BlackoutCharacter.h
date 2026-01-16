@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/Character.h"
+#include "Interaction/HandInterface.h"
 #include "BlackoutCharacter.generated.h"
 
 struct FInputActionValue;
@@ -12,7 +14,7 @@ class UCameraComponent;
 class UBillboardComponent;
 
 UCLASS()
-class BLACKOUT_API ABlackoutCharacter : public ACharacter
+class BLACKOUT_API ABlackoutCharacter : public ACharacter, public IHandInterface
 {
 	GENERATED_BODY()
 
@@ -20,6 +22,8 @@ public:
 	ABlackoutCharacter();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual AActor* GetRightHandItem_Implementation() const override;
+	virtual AActor* GetLeftHandItem_Implementation() const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -40,7 +44,10 @@ protected:
 	TObjectPtr<UInputAction> LookAroundAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputAction> InteractAction;	
+	TObjectPtr<UInputAction> InteractAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> UseItemAction;	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bInvertY = false;
@@ -59,6 +66,12 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
 	TObjectPtr<AActor> LastActor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TObjectPtr<AActor> RightHandItem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TObjectPtr<AActor> LeftHandItem;
 	
 
 private:
@@ -67,4 +80,5 @@ private:
 	void Interact();
 	bool IsInteractableActor(const AActor* Actor) const;
 	uint32 GetFreeHand() const;
+	void UseItem(const FInputActionValue& InputActionValue);
 };

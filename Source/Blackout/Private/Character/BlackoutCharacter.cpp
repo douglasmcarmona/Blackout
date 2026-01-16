@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "Interaction/InteractionInterface.h"
+#include "Interaction/UsageInterface.h"
 
 // Sets default values
 ABlackoutCharacter::ABlackoutCharacter()
@@ -67,10 +68,12 @@ void ABlackoutCharacter::Interact()
 			switch (GetFreeHand())
 			{
 				case 0: case 2:
-					ThisActor->AttachToComponent(RightHand, AttachmentTransformRules);	
+					ThisActor->AttachToComponent(RightHand, AttachmentTransformRules);
+					RightHandItem = ThisActor;
 				break;
 				case 1:
 					ThisActor->AttachToComponent(LeftHand, AttachmentTransformRules);
+					LeftHandItem = ThisActor;
 				break;
 				default: break;
 			}
@@ -87,6 +90,7 @@ void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this,  &ABlackoutCharacter::LookAround);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Interact);
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);		
 	}
 }
 
@@ -136,7 +140,40 @@ bool ABlackoutCharacter::IsInteractableActor(const AActor* Actor) const
 	return Actor != nullptr && Actor->Implements<UInteractionInterface>();
 }
 
+AActor* ABlackoutCharacter::GetRightHandItem_Implementation() const
+{
+	return RightHandItem;
+}
+
+AActor* ABlackoutCharacter::GetLeftHandItem_Implementation() const
+{
+	return LeftHandItem;
+}
+
 uint32 ABlackoutCharacter::GetFreeHand() const
 {
 	return (RightHand->GetNumChildrenComponents() > 0 ? 1 :0) | (LeftHand->GetNumChildrenComponents() > 0 ? 1 : 0) << 1;	
+}
+
+void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
+{
+	bool bIsRightHand = InputActionValue.Get<float>() > 0.f;
+	bool bRightHandBusy = RightHandItem != nullptr;
+	bool bLeftHandBusy = LeftHandItem != nullptr;
+
+	if ((!bRightHandBusy && !bLeftHandBusy)
+		|| (bIsRightHand && !bRightHandBusy)
+		|| (!bIsRightHand && !bLeftHandBusy))
+		return;
+
+	if (bIsRightHand)
+	{
+		if (RightHandItem->Implements<UUsageInterface>() && IUsageInterface::Execute_CanBeUsed(RightHandItem, true))
+			IUsageInterface::Execute_Use(RightHandItem);
+	}
+	else
+	{
+		if (LeftHandItem->Implements<UUsageInterface>() && IUsageInterface::Execute_CanBeUsed(LeftHandItem, false))
+			IUsageInterface::Execute_Use(LeftHandItem);
+	}
 }

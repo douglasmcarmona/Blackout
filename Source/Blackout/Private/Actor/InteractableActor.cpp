@@ -31,10 +31,5 @@ void AInteractableActor::Interact_Implementation()
 
 bool AInteractableActor::IsPickable_Implementation() const
 {
-	return InteractionType >= EObjectInteraction::Pickable;
-}
-
-bool AInteractableActor::IsUsable_Implementation() const
-{
-	return InteractionType == EObjectInteraction::Usable;
+	return bIsPickable;
 }

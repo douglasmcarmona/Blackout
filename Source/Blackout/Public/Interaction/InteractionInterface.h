@@ -32,11 +32,5 @@ public:
 	void Interact();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	bool IsPickable() const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	bool IsUsable() const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void Use();	
+	bool IsPickable() const;	
 };

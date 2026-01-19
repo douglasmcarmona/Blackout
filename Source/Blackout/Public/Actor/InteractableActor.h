@@ -19,7 +19,9 @@ public:
 	virtual void Highlight_Implementation() override;
 	virtual void Unhighlight_Implementation() override;
 	virtual void Interact_Implementation() override;
-	virtual bool IsPickable_Implementation() const override;	
+	virtual bool IsPickable_Implementation() const override;
+	virtual void Drop_Implementation() override;
+	virtual void PreparePickup_Implementation() override;
 	
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Highlight")

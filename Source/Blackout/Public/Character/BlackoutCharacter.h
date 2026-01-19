@@ -47,7 +47,13 @@ protected:
 	TObjectPtr<UInputAction> InteractAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputAction> UseItemAction;	
+	TObjectPtr<UInputAction> UseItemAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> EnableDropAction;	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> DropItemAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bInvertY = false;
@@ -59,7 +65,7 @@ protected:
 	float MaxInteractableDistance = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	float InteractionRadius = 10.f;
+	float InteractionRadius = 20.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
 	TObjectPtr<AActor> ThisActor;
@@ -80,5 +86,9 @@ private:
 	void Interact();
 	bool IsInteractableActor(const AActor* Actor) const;
 	uint32 GetFreeHand() const;
-	void UseItem(const FInputActionValue& InputActionValue);
+	void UseItem(const FInputActionValue& InputActionValue);	
+	void DropItem(const FInputActionValue& InputActionValue);
+	void EnableDrop(const FInputActionValue& InputActionValue);
+
+	bool bIsDropEnabled = false;
 };

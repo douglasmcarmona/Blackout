@@ -33,3 +33,15 @@ bool AInteractableActor::IsPickable_Implementation() const
 {
 	return bIsPickable;
 }
+
+void AInteractableActor::Drop_Implementation()
+{
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void AInteractableActor::PreparePickup_Implementation()
+{
+	Mesh->SetSimulatePhysics(false);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}

@@ -16,6 +16,7 @@ ABlackoutCharacter::ABlackoutCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(GetRootComponent());
+	CameraComponent->SetRelativeLocation(FVector(0.f, 0.f, EyesightZ));
 	CameraComponent->bUsePawnControlRotation = true;
 
 	RightHand = CreateDefaultSubobject<USceneComponent>("RightHand");
@@ -64,15 +65,16 @@ void ABlackoutCharacter::Interact()
 				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::KeepWorld,
 				false);
-
-			IInteractionInterface::Execute_PreparePickup(ThisActor);
+			
 			switch (GetFreeHand())
 			{
-				case 0: case 2:					
+				case 0: case 2:
+					IInteractionInterface::Execute_PreparePickup(ThisActor);
 					ThisActor->AttachToComponent(RightHand, AttachmentTransformRules);
 					RightHandItem = ThisActor;
 				break;
 				case 1:
+					IInteractionInterface::Execute_PreparePickup(ThisActor);
 					ThisActor->AttachToComponent(LeftHand, AttachmentTransformRules);
 					LeftHandItem = ThisActor;
 				break;

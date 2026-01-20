@@ -92,7 +92,8 @@ void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this,  &ABlackoutCharacter::LookAround);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Interact);
 		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);				
-		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableThrow);				
+		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableThrow);
+		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::EnableThrow);
 	}
 }
 

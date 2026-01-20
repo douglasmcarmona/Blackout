@@ -20,7 +20,7 @@ public:
 	virtual void Unhighlight_Implementation() override;
 	virtual void Interact_Implementation() override;
 	virtual bool IsPickable_Implementation() const override;
-	virtual void Drop_Implementation() override;
+	virtual void Throw_Implementation(const FVector& ThrowForce) override;
 	virtual void PreparePickup_Implementation() override;
 	
 protected:

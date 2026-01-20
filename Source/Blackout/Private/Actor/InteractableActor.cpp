@@ -34,10 +34,11 @@ bool AInteractableActor::IsPickable_Implementation() const
 	return bIsPickable;
 }
 
-void AInteractableActor::Drop_Implementation()
+void AInteractableActor::Throw_Implementation(const FVector& ThrowForce)
 {
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Mesh->AddImpulse(ThrowForce);
 }
 
 void AInteractableActor::PreparePickup_Implementation()

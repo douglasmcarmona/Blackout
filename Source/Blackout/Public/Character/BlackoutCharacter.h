@@ -50,10 +50,7 @@ protected:
 	TObjectPtr<UInputAction> UseItemAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputAction> EnableDropAction;	
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputAction> DropItemAction;
+	TObjectPtr<UInputAction> EnableThrowAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bInvertY = false;
@@ -73,10 +70,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
 	TObjectPtr<AActor> LastActor;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TObjectPtr<AActor> RightHandItem;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TObjectPtr<AActor> LeftHandItem;
 	
 
@@ -86,9 +83,9 @@ private:
 	void Interact();
 	bool IsInteractableActor(const AActor* Actor) const;
 	uint32 GetFreeHand() const;
-	void UseItem(const FInputActionValue& InputActionValue);	
-	void DropItem(const FInputActionValue& InputActionValue);
-	void EnableDrop(const FInputActionValue& InputActionValue);
+	void UseItem(const FInputActionValue& InputActionValue);
+	void EnableThrow(const FInputActionValue& InputActionValue);
 
-	bool bIsDropEnabled = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
+	bool bIsThrowEnabled = false;
 };

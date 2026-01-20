@@ -91,10 +91,8 @@ void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this,  &ABlackoutCharacter::LookAround);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Interact);
-		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);		
-		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::DropItem);
-		EnhancedInputComponent->BindAction(EnableDropAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableDrop);
-		EnhancedInputComponent->BindAction(EnableDropAction, ETriggerEvent::Completed, this, &ABlackoutCharacter::EnableDrop);		
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);				
+		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableThrow);				
 	}
 }
 
@@ -161,7 +159,7 @@ uint32 ABlackoutCharacter::GetFreeHand() const
 
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 {
-	if (bIsDropEnabled) return;
+	if (bIsThrowEnabled) return;
 	
 	bool bIsRightHand = InputActionValue.Get<float>() > 0.f;
 	bool bRightHandBusy = RightHandItem != nullptr;
@@ -184,40 +182,7 @@ void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 	}
 }
 
-void ABlackoutCharacter::DropItem(const FInputActionValue& InputActionValue)
+void ABlackoutCharacter::EnableThrow(const FInputActionValue& InputActionValue)
 {
-	if (!bIsDropEnabled) return;
-	const bool bIsRightHand = InputActionValue.Get<float>() > 0.f;
-	
-	if (bIsRightHand && RightHandItem)
-	{
-		const FDetachmentTransformRules DetachmentTransformRules(
-		EDetachmentRule::KeepWorld,
-		EDetachmentRule::KeepWorld,
-		EDetachmentRule::KeepWorld,
-		true
-		);
-		
-		RightHandItem->DetachFromActor(DetachmentTransformRules);
-		IInteractionInterface::Execute_Drop(RightHandItem);
-		RightHandItem = nullptr;
-	}
-
-	else if (!bIsRightHand && LeftHandItem)
-	{
-		const FDetachmentTransformRules DetachmentTransformRules(
-		EDetachmentRule::KeepWorld,
-		EDetachmentRule::KeepWorld,
-		EDetachmentRule::KeepWorld,
-		true);
-		
-		LeftHandItem->DetachFromActor(DetachmentTransformRules);
-		IInteractionInterface::Execute_Drop(LeftHandItem);
-		LeftHandItem = nullptr;
-	}
-}
-
-void ABlackoutCharacter::EnableDrop(const FInputActionValue& InputActionValue)
-{
-	bIsDropEnabled = InputActionValue.Get<bool>();
+	bIsThrowEnabled = InputActionValue.Get<bool>();
 }

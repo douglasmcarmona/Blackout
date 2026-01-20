@@ -35,7 +35,7 @@ public:
 	bool IsPickable() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void Drop();
+	void Throw(const FVector& ThrowForce);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	void PreparePickup();

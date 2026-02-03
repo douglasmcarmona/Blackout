@@ -8,6 +8,7 @@
 #include "Interaction/HandInterface.h"
 #include "BlackoutCharacter.generated.h"
 
+class UInventoryComponent;
 struct FInputActionValue;
 class UInputAction;
 class UCameraComponent;
@@ -25,9 +26,12 @@ public:
 	virtual AActor* GetRightHandItem_Implementation() const override;
 	virtual AActor* GetLeftHandItem_Implementation() const override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bIsInventoryOpen = false;
+
 protected:
 	virtual void BeginPlay() override;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<UCameraComponent> CameraComponent;
 
@@ -52,6 +56,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> EnableThrowAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> ToggleInventoryAction;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bInvertY = false;
 
@@ -75,6 +82,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TObjectPtr<AActor> LeftHandItem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
 	
 
 private:
@@ -83,8 +93,10 @@ private:
 	void Interact();
 	bool IsInteractableActor(const AActor* Actor) const;
 	uint32 GetFreeHand() const;
+	bool IsHandHoldingItem(const bool bIsRightHand) const;
 	void UseItem(const FInputActionValue& InputActionValue);
 	void EnableThrow(const FInputActionValue& InputActionValue);
+	void ToggleInventory();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
 	bool bIsThrowEnabled = false;

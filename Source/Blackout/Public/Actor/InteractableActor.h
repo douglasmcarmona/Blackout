@@ -20,8 +20,10 @@ public:
 	virtual void Unhighlight_Implementation() override;
 	virtual void Interact_Implementation() override;
 	virtual bool IsPickable_Implementation() const override;
+	virtual bool IsStorable_Implementation() const override;
 	virtual void Throw_Implementation(const FVector& ThrowForce) override;
 	virtual void PreparePickup_Implementation() override;
+	virtual UTexture2D* GetIcon_Implementation() override;
 	
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Highlight")
@@ -38,4 +40,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsPickable = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bIsStorable = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UTexture2D> InventoryIcon;
 };

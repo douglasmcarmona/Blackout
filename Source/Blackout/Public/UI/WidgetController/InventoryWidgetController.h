@@ -5,7 +5,11 @@
 #include "CoreMinimal.h"
 #include "InventoryWidgetController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemStoredSignature, int32, StoredItemSlotNumber, UTexture2D*, StoredItemIcon);
+class UInventorySlot;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemStoredSignature, int32, StoredItemSlotNumber, UTexture2D*,
+                                             StoredItemIcon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryOpen, int32, SlotNumber, UInventorySlot*, Slot);
 
 class UInventoryComponent;
 /**
@@ -26,8 +30,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetInventoryComponent(UInventoryComponent* InInventoryComponent);
 
+	UFUNCTION(BlueprintCallable)
+	void LoadInventory();
+
 	UPROPERTY(BlueprintAssignable)
 	FOnItemStoredSignature OnItemStoredDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnInventoryOpen OnInventoryOpenDelegate;
 
 private:
 	UPROPERTY()

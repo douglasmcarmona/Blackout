@@ -22,13 +22,18 @@ void ABlackoutHUD::InitInventoryWidget(UInventoryComponent* InventoryComponent)
 	checkf(InventoryWidgetControllerClass, TEXT("InventoryWidgetControllerClass uninitialized. Please fill in HUD BP"));
 	checkf(InventoryWidgetClass, TEXT("InventoryWidgetClass uninitialized. Please fill in HUD BP"));
 
-	UUserWidget* UserWidget = CreateWidget<UInventoryUserWidget>(GetWorld(), InventoryWidgetClass);
-	InventoryWidget = Cast<UInventoryUserWidget>(UserWidget);
-	
-	InventoryWidget->SetInventoryWidgetController(GetInventoryWidgetController(InventoryComponent));
+	if (!InventoryWidget)
+	{
+		UUserWidget* UserWidget = CreateWidget<UInventoryUserWidget>(GetWorld(), InventoryWidgetClass);
+		InventoryWidget = Cast<UInventoryUserWidget>(UserWidget);		
+	}
+
+	InventoryWidget->AddToViewport();
+	InventoryWidgetController = GetInventoryWidgetController(InventoryComponent);
+	InventoryWidget->SetInventoryWidgetController(InventoryWidgetController);
+	InventoryWidgetController->LoadInventory();
 	UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(GetOwningPlayerController(), InventoryWidget);
 	GetOwningPlayerController()->SetShowMouseCursor(true);
-	InventoryWidget->AddToViewport();
 }
 
 void ABlackoutHUD::CloseInventoryWidget() const

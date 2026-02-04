@@ -8,7 +8,7 @@
 
 void UInventoryWidgetController::StoreItem(const int32 SlotNumber, const bool bIsRightHand)
 {
-	InventoryComponent->StoreItem(SlotNumber, bIsRightHand);	
+	InventoryComponent->StoreItem(SlotNumber, bIsRightHand);
 }
 
 UInventoryComponent* UInventoryWidgetController::GetInventoryComponent() const
@@ -23,4 +23,12 @@ void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InIn
 	{
 		OnItemStoredDelegate.Broadcast(InSlot->GetSlotNumber(), InSlot->GetSlotIcon());		
 	});
+}
+
+void UInventoryWidgetController::LoadInventory()
+{
+	for (int32 i=0; i<InventoryComponent->InventorySize; i++)
+	{		
+		OnInventoryOpenDelegate.Broadcast(i, InventoryComponent->GetSlot(i));	
+	}
 }

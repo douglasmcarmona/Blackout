@@ -16,36 +16,23 @@ UInventoryComponent::UInventoryComponent()
 
 void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 {
-	AActor* StoredItem = nullptr;	
-	if (bIsRightHand)
-	{
-		StoredItem = IHandInterface::Execute_GetRightHandItem(GetOwner());
-	}
-	else
-	{
-		StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
-	}
-
+	AActor* StoredItem = bIsRightHand ? IHandInterface::Execute_GetRightHandItem(GetOwner()) : StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
 	if (!StoredItem) return;
 	if (!IInteractionInterface::Execute_IsStorable(StoredItem)) return;
 	
 	const bool bIsFlashlight = IInteractionInterface::Execute_IsFlashLight(StoredItem); 
 	SlotNumber = bIsFlashlight ? 0 : SlotNumber;
 	if (!IsSlotAvailable(SlotNumber, bIsFlashlight)) return;
-	
-	UInventorySlot* NewItem = NewObject<UInventorySlot>();
-	NewItem->SetSlotNumber(SlotNumber);
-	NewItem->SetSlotItemClass(StoredItem->GetClass());
-	NewItem->SetSlotIcon(IInteractionInterface::Execute_GetIcon(StoredItem));
-	Inventory.Insert(NewItem, SlotNumber);
-	OnItemStored.Broadcast(NewItem, bIsRightHand);
+	Inventory[SlotNumber]->SetSlotItemClass(StoredItem->GetClass());
+	Inventory[SlotNumber]->SetSlotIcon(IInteractionInterface::Execute_GetIcon(StoredItem));	
+	OnItemStored.Broadcast(Inventory[SlotNumber], bIsRightHand);
 }
 
 bool UInventoryComponent::IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight)
 {
-	if (Inventory[SlotNumber] != nullptr) return false;
+	if (Inventory[SlotNumber]->GetSlotIcon() != nullptr) return false;
 	const bool IsSlotZero = SlotNumber == 0;	
-	return !(bIsFlashlight ^ IsSlotZero);	
+	return !(bIsFlashlight ^ IsSlotZero);
 }
 
 UInventorySlot* UInventoryComponent::GetSlot(const int32 SlotNumber)
@@ -56,4 +43,9 @@ UInventorySlot* UInventoryComponent::GetSlot(const int32 SlotNumber)
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	for (int32 i = 0; i < InventorySize; i++)
+	{		
+		Inventory[i] = NewObject<UInventorySlot>();
+		Inventory[i]->SetSlotNumber(i);
+	}
 }

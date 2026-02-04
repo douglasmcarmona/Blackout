@@ -3,6 +3,13 @@
 
 #include "Inventory/InventorySlot.h"
 
+UInventorySlot::UInventorySlot()
+{
+	SlotNumber = -1;
+	SlotIcon = nullptr;
+	SlotItemClass = nullptr;
+}
+
 int32 UInventorySlot::GetSlotNumber() const
 {
 	return SlotNumber;
@@ -23,7 +30,7 @@ void UInventorySlot::SetSlotItemClass(UClass* InSlotItemClass)
 	SlotItemClass = InSlotItemClass;
 }
 
-TObjectPtr<UTexture2D> UInventorySlot::GetSlotIcon() const
+UTexture2D* UInventorySlot::GetSlotIcon() const
 {
 	return SlotIcon;
 }

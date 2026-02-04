@@ -16,15 +16,26 @@ class BLACKOUT_API UInventorySlot : public UObject
 	GENERATED_BODY()
 
 public:
+	UInventorySlot();
+	
+	static UInventorySlot EmptySlot;
+	
+	UFUNCTION(BlueprintPure)
 	int32 GetSlotNumber() const;
 	void SetSlotNumber(const int32 InSlotNumber);
-	TSubclassOf<AInteractableActor> GetSlotItemClass() const;
+	
+	UFUNCTION(BlueprintPure)
+	TSubclassOf<AInteractableActor> GetSlotItemClass() const;	
 	void SetSlotItemClass(UClass* InSlotItemClass);
-	TObjectPtr<UTexture2D> GetSlotIcon() const;
+
+	UFUNCTION(BlueprintPure)
+	UTexture2D* GetSlotIcon() const;
 	void SetSlotIcon(UTexture2D* InSlotIcon);
 
 private:	
 	int32 SlotNumber;
 	TSubclassOf<AInteractableActor> SlotItemClass;
+
+	UPROPERTY()
 	TObjectPtr<UTexture2D> SlotIcon;	
 };

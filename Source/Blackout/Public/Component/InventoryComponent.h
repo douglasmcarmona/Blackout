@@ -29,9 +29,8 @@ public:
 	int32 InventorySize = 5;
 	
 	FOnItemStored OnItemStored;
-	
 
-protected:	
+protected:
 	virtual void BeginPlay() override;
 
 private:

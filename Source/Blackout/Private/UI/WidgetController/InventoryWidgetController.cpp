@@ -4,11 +4,15 @@
 #include "UI/WidgetController/InventoryWidgetController.h"
 
 #include "Component/InventoryComponent.h"
-#include "Inventory/InventorySlot.h"
 
 void UInventoryWidgetController::StoreItem(const int32 SlotNumber, const bool bIsRightHand)
 {
 	InventoryComponent->StoreItem(SlotNumber, bIsRightHand);
+}
+
+void UInventoryWidgetController::WithdrawItem(const int32 SlotNumber, const bool bIsRightHand)
+{
+	InventoryComponent->WithdrawItem(SlotNumber, bIsRightHand);
 }
 
 UInventoryComponent* UInventoryWidgetController::GetInventoryComponent() const
@@ -19,9 +23,13 @@ UInventoryComponent* UInventoryWidgetController::GetInventoryComponent() const
 void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InInventoryComponent)
 {
 	InventoryComponent = InInventoryComponent;
-	InventoryComponent->OnItemStored.AddLambda([this](const UInventorySlot* InSlot, const bool bIsRightHand)
+	InventoryComponent->OnItemStored.AddLambda([this](const FSlot& InSlot, const bool bIsRightHand)
 	{
-		OnItemStoredDelegate.Broadcast(InSlot->GetSlotNumber(), InSlot->GetSlotIcon());		
+		OnItemStoredDelegate.Broadcast(InSlot.SlotNumber, InSlot.SlotIcon);		
+	});
+	InventoryComponent->OnItemWithdrew.AddLambda([this](const int32 SlotNumber)
+	{
+		OnItemWithdrewDelegate.Broadcast(SlotNumber);
 	});
 }
 

@@ -7,9 +7,10 @@
 
 class UInventorySlot;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryOpen, int32, SlotNumber, const FSlot&, Slot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemStoredSignature, int32, StoredItemSlotNumber, UTexture2D*,
                                              StoredItemIcon);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryOpen, int32, SlotNumber, UInventorySlot*, Slot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemWithdrewSignature, int32, SlotNumber);
 
 class UInventoryComponent;
 /**
@@ -24,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StoreItem(const int32 SlotNumber, const bool bIsRightHand);
 
+	UFUNCTION(BlueprintCallable)
+	void WithdrawItem(const int32 SlotNumber, const bool bIsRightHand);
+
 	UFUNCTION(BlueprintPure)
 	UInventoryComponent* GetInventoryComponent() const;
 
@@ -35,6 +39,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnItemStoredSignature OnItemStoredDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnItemWithdrewSignature OnItemWithdrewDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnInventoryOpen OnInventoryOpenDelegate;

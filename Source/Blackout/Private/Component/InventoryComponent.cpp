@@ -5,13 +5,11 @@
 
 #include "Interaction/HandInterface.h"
 #include "Interaction/InteractionInterface.h"
-#include "Inventory/InventorySlot.h"
 
 UInventoryComponent::UInventoryComponent()
 {	
 	PrimaryComponentTick.bCanEverTick = false;
-	Inventory = TArray<UInventorySlot*>();
-	Inventory.SetNum(InventorySize);
+	Inventory = TArray<FSlot>();	
 }
 
 void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
@@ -23,29 +21,55 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 	const bool bIsFlashlight = IInteractionInterface::Execute_IsFlashLight(StoredItem); 
 	SlotNumber = bIsFlashlight ? 0 : SlotNumber;
 	if (!IsSlotAvailable(SlotNumber, bIsFlashlight)) return;
-	Inventory[SlotNumber]->SetSlotItemClass(StoredItem->GetClass());
-	Inventory[SlotNumber]->SetSlotIcon(IInteractionInterface::Execute_GetIcon(StoredItem));	
-	OnItemStored.Broadcast(Inventory[SlotNumber], bIsRightHand);
+
+	const FSlot NewSlot = FSlot(SlotNumber, StoredItem->GetClass(), IInteractionInterface::Execute_GetIcon(StoredItem));
+	Inventory.Add(NewSlot);
+	OnItemStored.Broadcast(NewSlot, bIsRightHand);
+}
+
+void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRightHand)
+{
+	FSlot FoundSlot = GetSlot(SlotNumber);
+	if (FoundSlot.SlotNumber < 0) return;
+
+	AActor* WithdrewItem = NewObject<AActor>(this, FoundSlot.SlotItemClass);
+	if (bIsRightHand)
+	{
+		IHandInterface::Execute_SetRightHandItem(GetOwner(), WithdrewItem);
+	}
+	else
+	{
+		IHandInterface::Execute_SetLeftHandItem(GetOwner(), WithdrewItem);
+	}
+	Inventory.RemoveSingle(FoundSlot);
+	OnItemWithdrew.Broadcast(SlotNumber);
 }
 
 bool UInventoryComponent::IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight)
 {
-	if (Inventory[SlotNumber]->GetSlotIcon() != nullptr) return false;
+	if (GetSlot(SlotNumber).SlotNumber >= 0) return false;
 	const bool IsSlotZero = SlotNumber == 0;	
 	return !(bIsFlashlight ^ IsSlotZero);
 }
 
-UInventorySlot* UInventoryComponent::GetSlot(const int32 SlotNumber)
+FSlot UInventoryComponent::GetSlot(const int32 SlotNumber)
 {
-	return Inventory[SlotNumber];
+	FSlot Slot = FSlot();
+	if (!Inventory.IsEmpty())
+	{
+		FSlot* FoundSlot = Inventory.FindByPredicate([SlotNumber](const FSlot& Slot)
+		{
+			return Slot.SlotNumber == SlotNumber;
+		});
+		if (FoundSlot)
+		{
+			Slot = *FoundSlot;
+		}
+	}
+	return Slot;
 }
 
 void UInventoryComponent::BeginPlay()
 {
-	Super::BeginPlay();
-	for (int32 i = 0; i < InventorySize; i++)
-	{		
-		Inventory[i] = NewObject<UInventorySlot>();
-		Inventory[i]->SetSlotNumber(i);
-	}
+	Super::BeginPlay();	
 }

@@ -8,7 +8,28 @@
 
 class UInventorySlot;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemStored, const UInventorySlot*, const bool);
+USTRUCT(BlueprintType)
+struct FSlot
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 SlotNumber = -1;
+
+	UPROPERTY(BlueprintReadOnly)
+	TSubclassOf<AActor> SlotItemClass = nullptr;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UTexture2D> SlotIcon = nullptr;
+
+	bool operator==(const FSlot& Other) const
+	{
+		return SlotNumber == Other.SlotNumber;
+	}	
+};
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemStored, const FSlot&, const bool);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemWithdrew, const int32)
 
 UCLASS( ClassGroup=(Custom), Blueprintable, meta=(BlueprintSpawnableComponent) )
 class BLACKOUT_API UInventoryComponent : public UActorComponent
@@ -18,22 +39,24 @@ class BLACKOUT_API UInventoryComponent : public UActorComponent
 public:
 	UInventoryComponent();
 	void StoreItem(int32 SlotNumber, const bool bIsRightHand);
+	void WithdrawItem(const int32 SlotNumber, const bool bIsRightHand);
 
 	UFUNCTION(BlueprintCallable)
 	bool IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight);
 
 	UFUNCTION(BlueprintCallable)
-	UInventorySlot* GetSlot(const int32 SlotNumber);
+	FSlot GetSlot(const int32 SlotNumber);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 InventorySize = 5;
 	
 	FOnItemStored OnItemStored;
+	FOnItemWithdrew OnItemWithdrew;
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	TArray<UInventorySlot*> Inventory;
+	TArray<FSlot> Inventory;
 };

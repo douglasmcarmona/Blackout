@@ -43,7 +43,7 @@ void ABlackoutCharacter::BeginPlay()
 	checkf(EnableThrowAction, TEXT("Please fill in EnableThrowAction"));
 	checkf(ToggleInventoryAction, TEXT("Please fill in ToggleInventoryAction"));
 
-	InventoryComponent->OnItemStored.AddLambda([this](const UInventorySlot* InSlot, const bool bIsRightHand)
+	InventoryComponent->OnItemStored.AddLambda([this](const FSlot& InSlot, const bool bIsRightHand)
 	{	
 		if (bIsRightHand)
 		{
@@ -186,12 +186,44 @@ AActor* ABlackoutCharacter::GetLeftHandItem_Implementation() const
 	return LeftHandItem;
 }
 
+bool ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
+{
+	if (IsHandHoldingItem_Implementation(true)) return false;
+	
+	FAttachmentTransformRules AttachmentTransformRules(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				false);
+	
+	IInteractionInterface::Execute_PreparePickup(Item);
+	Item->AttachToComponent(RightHand, AttachmentTransformRules);
+	RightHandItem = Item;
+	return true;
+}
+
+bool ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
+{
+	if (IsHandHoldingItem_Implementation(false)) return false;
+	
+	FAttachmentTransformRules AttachmentTransformRules(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				false);
+	
+	IInteractionInterface::Execute_PreparePickup(Item);
+	Item->AttachToComponent(LeftHand, AttachmentTransformRules);
+	LeftHandItem = Item;
+	return true;
+}
+
 uint32 ABlackoutCharacter::GetFreeHand() const
 {
 	return (RightHand->GetNumChildrenComponents() > 0 ? 1 :0) | (LeftHand->GetNumChildrenComponents() > 0 ? 1 : 0) << 1;	
 }
 
-bool ABlackoutCharacter::IsHandHoldingItem(const bool bIsRightHand) const
+bool ABlackoutCharacter::IsHandHoldingItem_Implementation(const bool bIsRightHand) const
 {
 	const bool bRightHandBusy = RightHandItem != nullptr;
 	const bool bLeftHandBusy = LeftHandItem != nullptr;
@@ -205,7 +237,7 @@ void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 	
 	bool bIsRightHand = InputActionValue.Get<float>() > 0.f;
 
-	if (!IsHandHoldingItem(bIsRightHand)) return;
+	if (!IsHandHoldingItem_Implementation(bIsRightHand)) return;
 
 	if (bIsRightHand)
 	{

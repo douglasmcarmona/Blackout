@@ -23,10 +23,7 @@ class BLACKOUT_API UInventoryWidgetController : public UObject
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void StoreItem(const int32 SlotNumber, const bool bIsRightHand);
-
-	UFUNCTION(BlueprintCallable)
-	void WithdrawItem(const int32 SlotNumber, const bool bIsRightHand);
+	void HandleItem(const int32 SlotNumber, const bool bIsRightHand, const bool bIsWithdrawing);
 
 	UFUNCTION(BlueprintPure)
 	UInventoryComponent* GetInventoryComponent() const;

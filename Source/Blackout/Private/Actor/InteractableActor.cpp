@@ -3,7 +3,6 @@
 
 #include "Actor/InteractableActor.h"
 
-// Sets default values
 AInteractableActor::AInteractableActor()
 { 	
 	PrimaryActorTick.bCanEverTick = false;
@@ -38,7 +37,6 @@ bool AInteractableActor::IsStorable_Implementation() const
 {
 	return bIsStorable;
 }
-
 
 void AInteractableActor::Throw_Implementation(const FVector& ThrowForce)
 {

@@ -5,14 +5,10 @@
 
 #include "Component/InventoryComponent.h"
 
-void UInventoryWidgetController::StoreItem(const int32 SlotNumber, const bool bIsRightHand)
+void UInventoryWidgetController::HandleItem(const int32 SlotNumber, const bool bIsRightHand, const bool bIsWithdrawing)
 {
-	InventoryComponent->StoreItem(SlotNumber, bIsRightHand);
-}
-
-void UInventoryWidgetController::WithdrawItem(const int32 SlotNumber, const bool bIsRightHand)
-{
-	InventoryComponent->WithdrawItem(SlotNumber, bIsRightHand);
+	if (bIsWithdrawing) InventoryComponent->WithdrawItem(SlotNumber, bIsRightHand); 
+	else InventoryComponent->StoreItem(SlotNumber, bIsRightHand);
 }
 
 UInventoryComponent* UInventoryWidgetController::GetInventoryComponent() const

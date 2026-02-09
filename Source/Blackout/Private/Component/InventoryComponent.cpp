@@ -29,10 +29,20 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 
 void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRightHand)
 {
-	FSlot FoundSlot = GetSlot(SlotNumber);
-	if (FoundSlot.SlotNumber < 0) return;
-
-	AActor* WithdrewItem = NewObject<AActor>(this, FoundSlot.SlotItemClass);
+	const FSlot& FoundSlot = GetSlot(SlotNumber);
+	if (FoundSlot.SlotNumber < 0) return;	
+	if (IHandInterface::Execute_IsHandHoldingItem(GetOwner(), bIsRightHand)) return;
+	
+	FTransform Transform;
+	Transform.SetLocation(IHandInterface::Execute_GetHandLocation(GetOwner(), bIsRightHand));
+	
+	AActor* WithdrewItem = GetWorld()->SpawnActorDeferred<AActor>(
+		FoundSlot.SlotItemClass,
+		Transform,
+		GetOwner());
+	
+	if (!WithdrewItem) return;
+	
 	if (bIsRightHand)
 	{
 		IHandInterface::Execute_SetRightHandItem(GetOwner(), WithdrewItem);
@@ -41,6 +51,7 @@ void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRig
 	{
 		IHandInterface::Execute_SetLeftHandItem(GetOwner(), WithdrewItem);
 	}
+	WithdrewItem->FinishSpawning(Transform);
 	Inventory.RemoveSingle(FoundSlot);
 	OnItemWithdrew.Broadcast(SlotNumber);
 }
@@ -67,9 +78,4 @@ FSlot UInventoryComponent::GetSlot(const int32 SlotNumber)
 		}
 	}
 	return Slot;
-}
-
-void UInventoryComponent::BeginPlay()
-{
-	Super::BeginPlay();	
 }

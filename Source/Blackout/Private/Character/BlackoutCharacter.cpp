@@ -48,10 +48,12 @@ void ABlackoutCharacter::BeginPlay()
 		if (bIsRightHand)
 		{
 			RightHandItem->Destroy();
+			RightHandItem = nullptr;
 		}
 		else
 		{
 			LeftHandItem->Destroy();
+			LeftHandItem = nullptr;
 		}
 	});
 }
@@ -186,10 +188,8 @@ AActor* ABlackoutCharacter::GetLeftHandItem_Implementation() const
 	return LeftHandItem;
 }
 
-bool ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
-{
-	if (IsHandHoldingItem_Implementation(true)) return false;
-	
+void ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
+{	
 	FAttachmentTransformRules AttachmentTransformRules(
 				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::SnapToTarget,
@@ -199,13 +199,10 @@ bool ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
 	IInteractionInterface::Execute_PreparePickup(Item);
 	Item->AttachToComponent(RightHand, AttachmentTransformRules);
 	RightHandItem = Item;
-	return true;
 }
 
-bool ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
-{
-	if (IsHandHoldingItem_Implementation(false)) return false;
-	
+void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
+{	
 	FAttachmentTransformRules AttachmentTransformRules(
 				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::SnapToTarget,
@@ -215,7 +212,6 @@ bool ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
 	IInteractionInterface::Execute_PreparePickup(Item);
 	Item->AttachToComponent(LeftHand, AttachmentTransformRules);
 	LeftHandItem = Item;
-	return true;
 }
 
 uint32 ABlackoutCharacter::GetFreeHand() const
@@ -229,6 +225,11 @@ bool ABlackoutCharacter::IsHandHoldingItem_Implementation(const bool bIsRightHan
 	const bool bLeftHandBusy = LeftHandItem != nullptr;
 
 	return (bIsRightHand && bRightHandBusy) || (!bIsRightHand && bLeftHandBusy);
+}
+
+FVector ABlackoutCharacter::GetHandLocation_Implementation(const bool bIsRightHand) const
+{
+	return bIsRightHand ? RightHand->GetComponentLocation() : LeftHand->GetComponentLocation();
 }
 
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)

@@ -53,9 +53,6 @@ public:
 	FOnItemStored OnItemStored;
 	FOnItemWithdrew OnItemWithdrew;
 
-protected:
-	virtual void BeginPlay() override;
-
 private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<FSlot> Inventory;

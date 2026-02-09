@@ -28,12 +28,15 @@ public:
 	AActor* GetLeftHandItem() const;
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hand")
-	bool SetRightHandItem(AActor* Item);
+	void SetRightHandItem(AActor* Item);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hand")
-	bool SetLeftHandItem(AActor* Item);
+	void SetLeftHandItem(AActor* Item);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hand")
 	bool IsHandHoldingItem(const bool bIsRightHand) const;
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hand")
+	FVector GetHandLocation(const bool bIsRightHand) const;
 	
 };

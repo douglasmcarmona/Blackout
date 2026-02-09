@@ -25,9 +25,10 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual AActor* GetRightHandItem_Implementation() const override;
 	virtual AActor* GetLeftHandItem_Implementation() const override;
-	virtual bool SetRightHandItem_Implementation(AActor* Item) override;
-	virtual bool SetLeftHandItem_Implementation(AActor* Item) override;
+	virtual void SetRightHandItem_Implementation(AActor* Item) override;
+	virtual void SetLeftHandItem_Implementation(AActor* Item) override;
 	virtual bool IsHandHoldingItem_Implementation(const bool bIsRightHand) const override;
+	virtual FVector GetHandLocation_Implementation(const bool bIsRightHand) const override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsInventoryOpen = false;

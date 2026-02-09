@@ -34,6 +34,12 @@ bool AInteractableActor::IsPickable_Implementation() const
 	return bIsPickable;
 }
 
+bool AInteractableActor::IsStorable_Implementation() const
+{
+	return bIsStorable;
+}
+
+
 void AInteractableActor::Throw_Implementation(const FVector& ThrowForce)
 {
 	Mesh->SetSimulatePhysics(true);
@@ -45,4 +51,9 @@ void AInteractableActor::PreparePickup_Implementation()
 {
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+UTexture2D* AInteractableActor::GetIcon_Implementation()
+{
+	return InventoryIcon;
 }

@@ -8,6 +8,7 @@
 #include "Interaction/HandInterface.h"
 #include "BlackoutCharacter.generated.h"
 
+class UInventoryComponent;
 struct FInputActionValue;
 class UInputAction;
 class UCameraComponent;
@@ -20,14 +21,21 @@ class BLACKOUT_API ABlackoutCharacter : public ACharacter, public IHandInterface
 
 public:	
 	ABlackoutCharacter();
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual AActor* GetRightHandItem_Implementation() const override;
 	virtual AActor* GetLeftHandItem_Implementation() const override;
+	virtual void SetRightHandItem_Implementation(AActor* Item) override;
+	virtual void SetLeftHandItem_Implementation(AActor* Item) override;
+	virtual bool IsHandHoldingItem_Implementation(const bool bIsRightHand) const override;
+	virtual FVector GetHandLocation_Implementation(const bool bIsRightHand) const override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bIsInventoryOpen = false;
 
 protected:
 	virtual void BeginPlay() override;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<UCameraComponent> CameraComponent;
 
@@ -52,6 +60,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> EnableThrowAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> ToggleInventoryAction;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bInvertY = false;
 
@@ -75,6 +86,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	TObjectPtr<AActor> LeftHandItem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
 	
 
 private:
@@ -82,9 +96,10 @@ private:
 	void LookAround(const FInputActionValue& InputValue);
 	void Interact();
 	bool IsInteractableActor(const AActor* Actor) const;
-	uint32 GetFreeHand() const;
+	uint32 GetFreeHand() const;	
 	void UseItem(const FInputActionValue& InputActionValue);
 	void EnableThrow(const FInputActionValue& InputActionValue);
+	void ToggleInventory();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
 	bool bIsThrowEnabled = false;

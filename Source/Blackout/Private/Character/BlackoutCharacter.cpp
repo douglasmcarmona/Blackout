@@ -6,8 +6,11 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
+#include "Component/InventoryComponent.h"
 #include "Interaction/InteractionInterface.h"
 #include "Interaction/UsageInterface.h"
+#include "Player/BlackoutPlayerController.h"
+#include "UI/HUD/BlackoutHUD.h"
 
 // Sets default values
 ABlackoutCharacter::ABlackoutCharacter()
@@ -25,17 +28,40 @@ ABlackoutCharacter::ABlackoutCharacter()
 
 	LeftHand = CreateDefaultSubobject<USceneComponent>("LeftHand");
 	LeftHand->SetupAttachment(CameraComponent);
-	LeftHand->SetRelativeLocation(FVector(60.f, -25.f, -20.f));	
+	LeftHand->SetRelativeLocation(FVector(60.f, -25.f, -20.f));
+
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>("Inventory");
 }
 
 void ABlackoutCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	checkf(MoveAction, TEXT("Please fill in MoveAction"));
+	checkf(LookAroundAction, TEXT("Please fill in LookAroundAction"));
+	checkf(InteractAction, TEXT("Please fill in InteractAction"));
+	checkf(UseItemAction, TEXT("Please fill in UseItemAction"));
+	checkf(EnableThrowAction, TEXT("Please fill in EnableThrowAction"));
+	checkf(ToggleInventoryAction, TEXT("Please fill in ToggleInventoryAction"));
+
+	InventoryComponent->OnItemStored.AddLambda([this](const FSlot& InSlot, const bool bIsRightHand)
+	{	
+		if (bIsRightHand)
+		{
+			RightHandItem->Destroy();
+			RightHandItem = nullptr;
+		}
+		else
+		{
+			LeftHandItem->Destroy();
+			LeftHandItem = nullptr;
+		}
+	});
 }
 
 void ABlackoutCharacter::Move(const FInputActionValue& InputValue)
 {
+	if (bIsInventoryOpen) return;
+	
 	const FVector2D MovementDirection = InputValue.Get<FVector2D>();
 	const FRotator YawRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 
@@ -48,6 +74,8 @@ void ABlackoutCharacter::Move(const FInputActionValue& InputValue)
 
 void ABlackoutCharacter::LookAround(const FInputActionValue& InputValue)
 {
+	if (bIsInventoryOpen) return;
+	
 	const FVector2D LookAroundDirection = InputValue.Get<FVector2D>();
 	AddControllerYawInput(LookAroundDirection.X);
 	AddControllerPitchInput(bInvertY ? LookAroundDirection.Y : -LookAroundDirection.Y);
@@ -55,6 +83,8 @@ void ABlackoutCharacter::LookAround(const FInputActionValue& InputValue)
 
 void ABlackoutCharacter::Interact()
 {
+	if (bIsInventoryOpen) return;
+	
 	if (IsInteractableActor(ThisActor))
 	{
 		IInteractionInterface::Execute_Interact(ThisActor);
@@ -96,12 +126,15 @@ void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);				
 		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableThrow);
 		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::EnableThrow);
+		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::ToggleInventory);
 	}
 }
 
 void ABlackoutCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (bIsInventoryOpen) return;
+	
 	const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, EyesightZ);
 	const FVector TraceEnd = TraceStart + GetControlRotation().Vector() * MaxInteractableDistance;
 	FHitResult HitResult;
@@ -155,23 +188,57 @@ AActor* ABlackoutCharacter::GetLeftHandItem_Implementation() const
 	return LeftHandItem;
 }
 
+void ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
+{	
+	FAttachmentTransformRules AttachmentTransformRules(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				false);
+	
+	IInteractionInterface::Execute_PreparePickup(Item);
+	Item->AttachToComponent(RightHand, AttachmentTransformRules);
+	RightHandItem = Item;
+}
+
+void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
+{	
+	FAttachmentTransformRules AttachmentTransformRules(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				false);
+	
+	IInteractionInterface::Execute_PreparePickup(Item);
+	Item->AttachToComponent(LeftHand, AttachmentTransformRules);
+	LeftHandItem = Item;
+}
+
 uint32 ABlackoutCharacter::GetFreeHand() const
 {
 	return (RightHand->GetNumChildrenComponents() > 0 ? 1 :0) | (LeftHand->GetNumChildrenComponents() > 0 ? 1 : 0) << 1;	
 }
 
+bool ABlackoutCharacter::IsHandHoldingItem_Implementation(const bool bIsRightHand) const
+{
+	const bool bRightHandBusy = RightHandItem != nullptr;
+	const bool bLeftHandBusy = LeftHandItem != nullptr;
+
+	return (bIsRightHand && bRightHandBusy) || (!bIsRightHand && bLeftHandBusy);
+}
+
+FVector ABlackoutCharacter::GetHandLocation_Implementation(const bool bIsRightHand) const
+{
+	return bIsRightHand ? RightHand->GetComponentLocation() : LeftHand->GetComponentLocation();
+}
+
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 {
-	if (bIsThrowEnabled) return;
+	if (bIsThrowEnabled || bIsInventoryOpen) return;
 	
 	bool bIsRightHand = InputActionValue.Get<float>() > 0.f;
-	bool bRightHandBusy = RightHandItem != nullptr;
-	bool bLeftHandBusy = LeftHandItem != nullptr;
 
-	if ((!bRightHandBusy && !bLeftHandBusy)
-		|| (bIsRightHand && !bRightHandBusy)
-		|| (!bIsRightHand && !bLeftHandBusy))
-		return;
+	if (!IsHandHoldingItem_Implementation(bIsRightHand)) return;
 
 	if (bIsRightHand)
 	{
@@ -188,4 +255,28 @@ void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 void ABlackoutCharacter::EnableThrow(const FInputActionValue& InputActionValue)
 {
 	bIsThrowEnabled = InputActionValue.Get<bool>();
+}
+
+void ABlackoutCharacter::ToggleInventory()
+{
+	ABlackoutHUD* BlackoutHUD = nullptr;
+	ABlackoutPlayerController* PlayerController = Cast<ABlackoutPlayerController>(GetController());
+	if (PlayerController)
+	{
+		BlackoutHUD = Cast<ABlackoutHUD>(PlayerController->GetHUD());
+	}
+	
+	if (BlackoutHUD)
+	{
+		if (!bIsInventoryOpen)
+		{
+			BlackoutHUD->InitInventoryWidget(InventoryComponent);
+			bIsInventoryOpen = true;
+		}
+		else
+		{
+			BlackoutHUD->CloseInventoryWidget();
+			bIsInventoryOpen = false;
+		}
+	}
 }

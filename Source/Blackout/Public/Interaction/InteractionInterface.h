@@ -44,8 +44,5 @@ public:
 	void PreparePickup();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	bool IsFlashLight();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	UTexture2D* GetIcon();	
 };

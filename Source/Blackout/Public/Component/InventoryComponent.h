@@ -30,6 +30,7 @@ struct FSlot
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemStored, const FSlot&, const bool);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemWithdrew, const int32)
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnFlashlightStored, const float, const bool, const float)
 
 UCLASS( ClassGroup=(Custom), Blueprintable, meta=(BlueprintSpawnableComponent) )
 class BLACKOUT_API UInventoryComponent : public UActorComponent
@@ -52,6 +53,10 @@ public:
 	
 	FOnItemStored OnItemStored;
 	FOnItemWithdrew OnItemWithdrew;
+	FOnFlashlightStored OnFlashlightStored;
+	
+	float BatteryPercentage;
+	bool bIsFlashlightOn;
 
 private:
 	UPROPERTY(VisibleAnywhere)

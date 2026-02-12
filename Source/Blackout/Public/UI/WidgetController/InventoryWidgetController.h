@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryOpen, int32, SlotNumber
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemStoredSignature, int32, StoredItemSlotNumber, UTexture2D*,
                                              StoredItemIcon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemWithdrewSignature, int32, SlotNumber);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFlashlightBatteryChangedSignature, float, BatteryPercentage);
 
 class UInventoryComponent;
 /**
@@ -36,6 +37,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LoadInventory();
+	
+	virtual UWorld* GetWorld() const override;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnItemStoredSignature OnItemStoredDelegate;
@@ -45,8 +48,16 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnInventoryOpen OnInventoryOpenDelegate;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnFlashlightBatteryChangedSignature OnFlashlightBatteryChangedDelegate;
 
 private:
 	UPROPERTY()
 	TObjectPtr<UInventoryComponent> InventoryComponent;
+	
+	float BatteryPercentage;
+	bool bIsFlashlightOn;
+	
+	FTimerHandle BatteryDischargeTimerHandle;
 };

@@ -21,6 +21,7 @@ public:
 	virtual void Interact_Implementation() override;
 	virtual bool IsPickable_Implementation() const override;
 	virtual bool IsStorable_Implementation() const override;
+	virtual bool IsThrowable_Implementation() const override;
 	virtual void Throw_Implementation(const FVector& ThrowForce) override;
 	virtual void PreparePickup_Implementation() override;
 	virtual UTexture2D* GetIcon_Implementation() override;
@@ -43,7 +44,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsStorable = false;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsThrowable = false;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UTexture2D> InventoryIcon;
 };

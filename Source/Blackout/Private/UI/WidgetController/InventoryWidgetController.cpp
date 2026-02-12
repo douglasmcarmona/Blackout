@@ -42,6 +42,7 @@ void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InIn
 	{
 		BatteryPercentage = InBatteryPercentage;
 		bIsFlashlightOn = InIsFlashlightOn;
+		OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
 		if (bIsFlashlightOn)
 		{
 			GetWorld()->GetTimerManager().SetTimer(

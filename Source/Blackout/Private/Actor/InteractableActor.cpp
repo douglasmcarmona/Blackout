@@ -39,6 +39,10 @@ bool AInteractableActor::IsStorable_Implementation() const
 	return bIsStorable;
 }
 
+bool AInteractableActor::IsThrowable_Implementation() const
+{
+	return bIsThrowable;
+}
 
 void AInteractableActor::Throw_Implementation(const FVector& ThrowForce)
 {

@@ -3,6 +3,7 @@
 
 #include "Component/InventoryComponent.h"
 
+#include "Interaction/FlashlightInterface.h"
 #include "Interaction/HandInterface.h"
 #include "Interaction/InteractionInterface.h"
 
@@ -18,10 +19,18 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 	if (!StoredItem) return;
 	if (!IInteractionInterface::Execute_IsStorable(StoredItem)) return;
 	
-	const bool bIsFlashlight = IInteractionInterface::Execute_IsFlashLight(StoredItem); 
+	const bool bIsFlashlight = StoredItem->Implements<UFlashlightInterface>(); 
 	SlotNumber = bIsFlashlight ? 0 : SlotNumber;
 	if (!IsSlotAvailable(SlotNumber, bIsFlashlight)) return;
 
+	if (bIsFlashlight)
+	{
+		BatteryPercentage = IFlashlightInterface::Execute_GetBatteryPercentage(StoredItem);
+		bIsFlashlightOn = IFlashlightInterface::Execute_IsFlashlightOn(StoredItem);
+		const float DischargeRate = IFlashlightInterface::Execute_GetDischargeRate(StoredItem);
+		OnFlashlightStored.Broadcast(BatteryPercentage, bIsFlashlightOn, DischargeRate);
+	}
+	
 	const FSlot NewSlot = FSlot(SlotNumber, StoredItem->GetClass(), IInteractionInterface::Execute_GetIcon(StoredItem));
 	Inventory.Add(NewSlot);
 	OnItemStored.Broadcast(NewSlot, bIsRightHand);
@@ -54,6 +63,20 @@ void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRig
 	WithdrewItem->FinishSpawning(Transform);
 	Inventory.RemoveSingle(FoundSlot);
 	OnItemWithdrew.Broadcast(SlotNumber);
+	
+	if (WithdrewItem->Implements<UFlashlightInterface>())
+	{
+		IFlashlightInterface::Execute_Initialize(WithdrewItem);
+		IFlashlightInterface::Execute_SetBatteryPercentage(WithdrewItem, BatteryPercentage);
+		if (bIsFlashlightOn)
+		{
+			IFlashlightInterface::Execute_TurnOn(WithdrewItem);
+		}
+		else
+		{
+			IFlashlightInterface::Execute_TurnOff(WithdrewItem);
+		}
+	}
 }
 
 bool UInventoryComponent::IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight)

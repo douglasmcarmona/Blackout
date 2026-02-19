@@ -48,12 +48,10 @@ void ABlackoutCharacter::BeginPlay()
 		if (bIsRightHand)
 		{
 			RightHandItem->Destroy();
-			RightHandItem = nullptr;
 		}
 		else
 		{
 			LeftHandItem->Destroy();
-			LeftHandItem = nullptr;
 		}
 	});
 }
@@ -89,24 +87,14 @@ void ABlackoutCharacter::Interact()
 	{
 		IInteractionInterface::Execute_Interact(ThisActor);
 		if (IInteractionInterface::Execute_IsPickable(ThisActor))
-		{
-			FAttachmentTransformRules AttachmentTransformRules(
-				EAttachmentRule::SnapToTarget,
-				EAttachmentRule::SnapToTarget,
-				EAttachmentRule::KeepWorld,
-				false);
-			
+		{	
 			switch (GetFreeHand())
 			{
 				case 0: case 2:
-					IInteractionInterface::Execute_PreparePickup(ThisActor);
-					ThisActor->AttachToComponent(RightHand, AttachmentTransformRules);
-					RightHandItem = ThisActor;
+					SetRightHandItem_Implementation(ThisActor);
 				break;
 				case 1:
-					IInteractionInterface::Execute_PreparePickup(ThisActor);
-					ThisActor->AttachToComponent(LeftHand, AttachmentTransformRules);
-					LeftHandItem = ThisActor;
+					SetLeftHandItem_Implementation(ThisActor);
 				break;
 				default: break;
 			}
@@ -199,6 +187,7 @@ void ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
 	IInteractionInterface::Execute_PreparePickup(Item);
 	Item->AttachToComponent(RightHand, AttachmentTransformRules);
 	RightHandItem = Item;
+	RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
 }
 
 void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
@@ -212,6 +201,7 @@ void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
 	IInteractionInterface::Execute_PreparePickup(Item);
 	Item->AttachToComponent(LeftHand, AttachmentTransformRules);
 	LeftHandItem = Item;
+	LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
 }
 
 uint32 ABlackoutCharacter::GetFreeHand() const
@@ -279,4 +269,10 @@ void ABlackoutCharacter::ToggleInventory()
 			bIsInventoryOpen = false;
 		}
 	}
+}
+
+void ABlackoutCharacter::OnItemDestroyed(AActor* DestroyedItem)
+{
+	if (DestroyedItem == RightHandItem) RightHandItem = nullptr;
+	else if (DestroyedItem == LeftHandItem) LeftHandItem = nullptr;
 }

@@ -100,6 +100,9 @@ private:
 	void UseItem(const FInputActionValue& InputActionValue);
 	void EnableThrow(const FInputActionValue& InputActionValue);
 	void ToggleInventory();
+	
+	UFUNCTION()
+	void OnItemDestroyed(AActor* DestroyedItem);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
 	bool bIsThrowEnabled = false;

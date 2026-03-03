@@ -131,7 +131,7 @@ void ABlackoutCharacter::Tick(float DeltaSeconds)
 
 	const FCollisionShape SphereCollision = FCollisionShape::MakeSphere(InteractionRadius);
 	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActors(ActorsToIgnore);	
+	CollisionParams.AddIgnoredActors(ActorsToIgnore);
 	
 	GetWorld()->SweepSingleByChannel(
 		HitResult,
@@ -140,7 +140,7 @@ void ABlackoutCharacter::Tick(float DeltaSeconds)
 		FQuat::Identity,
 		ECC_Visibility,
 		SphereCollision,
-		CollisionParams		
+		CollisionParams
 		);
 
 	if (HitResult.bBlockingHit)
@@ -178,30 +178,36 @@ AActor* ABlackoutCharacter::GetLeftHandItem_Implementation() const
 
 void ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
 {	
-	FAttachmentTransformRules AttachmentTransformRules(
-				EAttachmentRule::SnapToTarget,
-				EAttachmentRule::SnapToTarget,
-				EAttachmentRule::KeepWorld,
-				false);
-	
-	IInteractionInterface::Execute_PreparePickup(Item);
-	Item->AttachToComponent(RightHand, AttachmentTransformRules);
 	RightHandItem = Item;
-	RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+	if (Item)
+	{
+		FAttachmentTransformRules AttachmentTransformRules(
+					EAttachmentRule::SnapToTarget,
+					EAttachmentRule::SnapToTarget,
+					EAttachmentRule::KeepWorld,
+					false);
+		
+		IInteractionInterface::Execute_PreparePickup(Item);
+		Item->AttachToComponent(RightHand, AttachmentTransformRules);	
+		RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+	}
 }
 
 void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
 {	
-	FAttachmentTransformRules AttachmentTransformRules(
+	LeftHandItem = Item;
+	if (Item)
+	{
+		FAttachmentTransformRules AttachmentTransformRules(
 				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::KeepWorld,
 				false);
 	
-	IInteractionInterface::Execute_PreparePickup(Item);
-	Item->AttachToComponent(LeftHand, AttachmentTransformRules);
-	LeftHandItem = Item;
-	LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+		IInteractionInterface::Execute_PreparePickup(Item);
+		Item->AttachToComponent(LeftHand, AttachmentTransformRules);
+		LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+	}	
 }
 
 uint32 ABlackoutCharacter::GetFreeHand() const
@@ -220,6 +226,42 @@ bool ABlackoutCharacter::IsHandHoldingItem_Implementation(const bool bIsRightHan
 FVector ABlackoutCharacter::GetHandLocation_Implementation(const bool bIsRightHand) const
 {
 	return bIsRightHand ? RightHand->GetComponentLocation() : LeftHand->GetComponentLocation();
+}
+
+AActor* ABlackoutCharacter::DropLeftHandItem_Implementation()
+{	
+	if (LeftHandItem)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld,
+		false);
+	
+		LeftHandItem->DetachFromActor(DetachmentTransformRules);	
+	}
+	
+	AActor* DetachedActor = LeftHandItem;
+	LeftHandItem = nullptr;
+	return DetachedActor;
+}
+
+AActor* ABlackoutCharacter::DropRightHandItem_Implementation()
+{
+	if (RightHandItem)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld,
+		false);
+	
+		RightHandItem->DetachFromActor(DetachmentTransformRules);	
+	}
+	
+	AActor* DetachedActor = RightHandItem;
+	RightHandItem = nullptr;
+	return DetachedActor;
 }
 
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)

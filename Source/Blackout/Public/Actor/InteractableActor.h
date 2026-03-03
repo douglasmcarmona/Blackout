@@ -23,8 +23,11 @@ public:
 	virtual bool IsStorable_Implementation() const override;
 	virtual bool IsThrowable_Implementation() const override;
 	virtual void Throw_Implementation(const FVector& ThrowForce) override;
-	virtual void PreparePickup_Implementation() override;
+	virtual void PreparePickup_Implementation() override;	
 	virtual UTexture2D* GetIcon_Implementation() override;
+	
+	UFUNCTION(BlueprintCallable)
+	void HandleDrop();
 	
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Highlight")
@@ -51,3 +54,4 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UTexture2D> InventoryIcon;
 };
+

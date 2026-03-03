@@ -7,7 +7,7 @@
 AInteractableActor::AInteractableActor()
 { 	
 	PrimaryActorTick.bCanEverTick = false;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");	
 	SetRootComponent(Mesh);
 	Mesh->CustomDepthStencilValue = CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE;
 }
@@ -46,8 +46,7 @@ bool AInteractableActor::IsThrowable_Implementation() const
 
 void AInteractableActor::Throw_Implementation(const FVector& ThrowForce)
 {
-	Mesh->SetSimulatePhysics(true);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	HandleDrop();
 	Mesh->AddImpulse(ThrowForce);
 }
 
@@ -60,4 +59,10 @@ void AInteractableActor::PreparePickup_Implementation()
 UTexture2D* AInteractableActor::GetIcon_Implementation()
 {
 	return InventoryIcon;
+}
+
+void AInteractableActor::HandleDrop()
+{
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }

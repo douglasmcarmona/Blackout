@@ -29,6 +29,8 @@ public:
 	virtual void SetLeftHandItem_Implementation(AActor* Item) override;
 	virtual bool IsHandHoldingItem_Implementation(const bool bIsRightHand) const override;
 	virtual FVector GetHandLocation_Implementation(const bool bIsRightHand) const override;
+	virtual AActor* DropLeftHandItem_Implementation() override;
+	virtual AActor* DropRightHandItem_Implementation() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsInventoryOpen = false;

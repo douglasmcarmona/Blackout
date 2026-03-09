@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "BlackoutGameMode.generated.h"
 
+class UPaperNoteInfo;
 /**
  * 
  */
@@ -14,4 +15,7 @@ class BLACKOUT_API ABlackoutGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UPaperNoteInfo> PaperNoteInformation;	
 };

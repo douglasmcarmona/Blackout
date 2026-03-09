@@ -10,6 +10,7 @@ AInteractableActor::AInteractableActor()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");	
 	SetRootComponent(Mesh);
 	Mesh->CustomDepthStencilValue = CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE;
+	HandleDrop();
 }
 
 void AInteractableActor::Highlight_Implementation()

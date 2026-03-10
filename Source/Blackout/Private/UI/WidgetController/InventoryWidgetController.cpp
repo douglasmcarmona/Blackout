@@ -15,7 +15,7 @@ void UInventoryWidgetController::WithdrawItem(const int32 SlotNumber, const bool
 	if (SlotNumber == 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(BatteryDischargeTimerHandle);
-		InventoryComponent->BatteryPercentage = BatteryPercentage;
+		InventoryComponent->BatteryPercentage = FlashlightBatteryPercentage;
 		InventoryComponent->bIsFlashlightOn = bIsFlashlightOn;
 	}
 	InventoryComponent->WithdrawItem(SlotNumber, bIsRightHand);
@@ -40,17 +40,17 @@ void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InIn
 	InventoryComponent->OnFlashlightStored.AddLambda([this](
 		const float InBatteryPercentage, const bool InIsFlashlightOn, const float DischargeRate)
 	{
-		BatteryPercentage = InBatteryPercentage;
+		FlashlightBatteryPercentage = InBatteryPercentage;
 		bIsFlashlightOn = InIsFlashlightOn;
-		OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
+		OnFlashlightBatteryChangedDelegate.Broadcast(FlashlightBatteryPercentage);
 		if (bIsFlashlightOn)
 		{
 			GetWorld()->GetTimerManager().SetTimer(
 				BatteryDischargeTimerHandle,
 				[this]
 				{
-					BatteryPercentage = FMath::Clamp(--BatteryPercentage, 0.f, 100.f);	
-					OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
+					FlashlightBatteryPercentage = FMath::Clamp(--FlashlightBatteryPercentage, 0.f, 100.f);	
+					OnFlashlightBatteryChangedDelegate.Broadcast(FlashlightBatteryPercentage);
 				},
 				DischargeRate,
 				true
@@ -62,8 +62,9 @@ void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InIn
 void UInventoryWidgetController::LoadInventory()
 {
 	for (int32 i=0; i<InventoryComponent->InventorySize; i++)
-	{		
-		OnInventoryOpenDelegate.Broadcast(i, InventoryComponent->GetSlot(i));	
+	{
+		FSlot Slot = InventoryComponent->GetSlot(i);	
+		OnInventoryOpenDelegate.Broadcast(i, Slot.SlotNumber >= 0, Slot, FlashlightBatteryPercentage);
 	}
 }
 

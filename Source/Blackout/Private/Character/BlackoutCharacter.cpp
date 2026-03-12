@@ -58,7 +58,7 @@ void ABlackoutCharacter::BeginPlay()
 
 void ABlackoutCharacter::Move(const FInputActionValue& InputValue)
 {
-	if (bIsInventoryOpen) return;
+	if (bIsInventoryOpen || bIsReadingNote) return;
 	
 	const FVector2D MovementDirection = InputValue.Get<FVector2D>();
 	const FRotator YawRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
@@ -72,7 +72,7 @@ void ABlackoutCharacter::Move(const FInputActionValue& InputValue)
 
 void ABlackoutCharacter::LookAround(const FInputActionValue& InputValue)
 {
-	if (bIsInventoryOpen) return;
+	if (bIsInventoryOpen || bIsReadingNote) return;
 	
 	const FVector2D LookAroundDirection = InputValue.Get<FVector2D>();
 	AddControllerYawInput(LookAroundDirection.X);
@@ -81,7 +81,7 @@ void ABlackoutCharacter::LookAround(const FInputActionValue& InputValue)
 
 void ABlackoutCharacter::Interact()
 {
-	if (bIsInventoryOpen) return;
+	if (bIsInventoryOpen || bIsReadingNote) return;
 	
 	if (IsInteractableActor(ThisActor))
 	{
@@ -121,7 +121,7 @@ void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void ABlackoutCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bIsInventoryOpen) return;
+	if (bIsInventoryOpen || bIsReadingNote) return;
 	
 	const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, EyesightZ);
 	const FVector TraceEnd = TraceStart + GetControlRotation().Vector() * MaxInteractableDistance;

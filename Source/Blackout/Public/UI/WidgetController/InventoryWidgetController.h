@@ -36,7 +36,7 @@ public:
 	void SetInventoryComponent(UInventoryComponent* InInventoryComponent);
 
 	UFUNCTION(BlueprintCallable)
-	void LoadInventory();
+	void LoadInventory() const;
 	
 	virtual UWorld* GetWorld() const override;
 

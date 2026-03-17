@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-class AInteractableActor;
 class UInventorySlot;
 
 USTRUCT(BlueprintType)
@@ -48,7 +47,7 @@ struct FSlot
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemStored, const FSlot&, const bool);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemWithdrew, const int32)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemWithdrawn, const int32)
 DECLARE_MULTICAST_DELEGATE(FOnFlashlightStored)
 
 UCLASS( ClassGroup=(Custom), Blueprintable, meta=(BlueprintSpawnableComponent) )
@@ -70,7 +69,7 @@ public:
 	int32 InventorySize = 5;
 	
 	FOnItemStored OnItemStored;
-	FOnItemWithdrew OnItemWithdrew;
+	FOnItemWithdrawn OnItemWithdrawn;
 	FOnFlashlightStored OnFlashlightStored;
 	
 private:

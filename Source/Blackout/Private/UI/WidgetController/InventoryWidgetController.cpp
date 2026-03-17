@@ -35,7 +35,7 @@ void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InIn
 	{
 		OnItemStoredDelegate.Broadcast(InSlot.SlotNumber, InSlot.SlotIcon);
 	});
-	InventoryComponent->OnItemWithdrew.AddLambda([this](const int32 SlotNumber)
+	InventoryComponent->OnItemWithdrawn.AddLambda([this](const int32 SlotNumber)
 	{
 		OnItemWithdrewDelegate.Broadcast(SlotNumber);
 	});

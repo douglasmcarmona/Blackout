@@ -15,7 +15,10 @@ UInventoryComponent::UInventoryComponent()
 
 void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 {
-	AActor* StoredItem = bIsRightHand ? IHandInterface::Execute_GetRightHandItem(GetOwner()) : StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
+	AActor* StoredItem = bIsRightHand ? 
+		IHandInterface::Execute_GetRightHandItem(GetOwner()) :
+		StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
+	
 	if (!StoredItem) return;
 	if (!IInteractionInterface::Execute_IsStorable(StoredItem)) return;
 	
@@ -61,7 +64,7 @@ void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRig
 	WithdrawnItem->FinishSpawning(Transform);
 	IInteractionInterface::Execute_HandleWithdrawnItemSlotData(WithdrawnItem, FoundSlot->SlotData);
 	Inventory.RemoveSingle(*FoundSlot);
-	OnItemWithdrew.Broadcast(SlotNumber);
+	OnItemWithdrawn.Broadcast(SlotNumber);
 }
 
 bool UInventoryComponent::IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight)

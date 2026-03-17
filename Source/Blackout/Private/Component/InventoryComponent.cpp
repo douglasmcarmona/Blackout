@@ -10,95 +10,74 @@
 UInventoryComponent::UInventoryComponent()
 {	
 	PrimaryComponentTick.bCanEverTick = false;
-	Inventory = TArray<FSlot>();	
+	Inventory = TArray<FSlot>();
 }
 
 void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 {
-	AActor* StoredItem = bIsRightHand ? IHandInterface::Execute_GetRightHandItem(GetOwner()) : StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
+	AActor* StoredItem = bIsRightHand ? 
+		IHandInterface::Execute_GetRightHandItem(GetOwner()) :
+		StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
+	
 	if (!StoredItem) return;
 	if (!IInteractionInterface::Execute_IsStorable(StoredItem)) return;
 	
-	const bool bIsFlashlight = StoredItem->Implements<UFlashlightInterface>(); 
+	const bool bIsFlashlight = StoredItem->Implements<UFlashlightInterface>();
 	SlotNumber = bIsFlashlight ? 0 : SlotNumber;
 	if (!IsSlotAvailable(SlotNumber, bIsFlashlight)) return;
-
-	if (bIsFlashlight)
-	{
-		BatteryPercentage = IFlashlightInterface::Execute_GetBatteryPercentage(StoredItem);
-		bIsFlashlightOn = IFlashlightInterface::Execute_IsFlashlightOn(StoredItem);
-		const float DischargeRate = IFlashlightInterface::Execute_GetDischargeRate(StoredItem);
-		OnFlashlightStored.Broadcast(BatteryPercentage, bIsFlashlightOn, DischargeRate);
-	}
 	
-	const FSlot NewSlot = FSlot(SlotNumber, StoredItem->GetClass(), IInteractionInterface::Execute_GetIcon(StoredItem));
+	FSlot NewSlot = FSlot(SlotNumber, StoredItem->GetClass(), IInteractionInterface::Execute_GetIcon(StoredItem), FSlotData());
+	IInteractionInterface::Execute_HandleStoredItemSlotData(StoredItem, NewSlot.SlotData);
 	Inventory.Add(NewSlot);
+	if (bIsFlashlight)
+	{		
+		OnFlashlightStored.Broadcast();
+	}
 	OnItemStored.Broadcast(NewSlot, bIsRightHand);
 }
 
 void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRightHand)
 {
-	const FSlot& FoundSlot = GetSlot(SlotNumber);
-	if (FoundSlot.SlotNumber < 0) return;	
+	const FSlot* FoundSlot = GetSlot(SlotNumber);
+	if (!FoundSlot) return;
 	if (IHandInterface::Execute_IsHandHoldingItem(GetOwner(), bIsRightHand)) return;
 	
 	FTransform Transform;
 	Transform.SetLocation(IHandInterface::Execute_GetHandLocation(GetOwner(), bIsRightHand));
 	
-	AActor* WithdrewItem = GetWorld()->SpawnActorDeferred<AActor>(
-		FoundSlot.SlotItemClass,
+	AActor* WithdrawnItem = GetWorld()->SpawnActorDeferred<AActor>(
+		FoundSlot->SlotItemClass,
 		Transform,
 		GetOwner());
 	
-	if (!WithdrewItem) return;
+	if (!WithdrawnItem) return;	
 	
 	if (bIsRightHand)
 	{
-		IHandInterface::Execute_SetRightHandItem(GetOwner(), WithdrewItem);
+		IHandInterface::Execute_SetRightHandItem(GetOwner(), WithdrawnItem);
 	}
 	else
 	{
-		IHandInterface::Execute_SetLeftHandItem(GetOwner(), WithdrewItem);
+		IHandInterface::Execute_SetLeftHandItem(GetOwner(), WithdrawnItem);
 	}
-	WithdrewItem->FinishSpawning(Transform);
-	Inventory.RemoveSingle(FoundSlot);
-	OnItemWithdrew.Broadcast(SlotNumber);
 	
-	if (WithdrewItem->Implements<UFlashlightInterface>())
-	{
-		IFlashlightInterface::Execute_Initialize(WithdrewItem);
-		IFlashlightInterface::Execute_SetBatteryPercentage(WithdrewItem, BatteryPercentage);
-		if (bIsFlashlightOn)
-		{
-			IFlashlightInterface::Execute_TurnOn(WithdrewItem);
-		}
-		else
-		{
-			IFlashlightInterface::Execute_TurnOff(WithdrewItem);
-		}
-	}
+	WithdrawnItem->FinishSpawning(Transform);
+	IInteractionInterface::Execute_HandleWithdrawnItemSlotData(WithdrawnItem, FoundSlot->SlotData);
+	Inventory.RemoveSingle(*FoundSlot);
+	OnItemWithdrawn.Broadcast(SlotNumber);
 }
 
 bool UInventoryComponent::IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight)
 {
-	if (GetSlot(SlotNumber).SlotNumber >= 0) return false;
+	if (GetSlot(SlotNumber)) return false;
 	const bool IsSlotZero = SlotNumber == 0;	
 	return !(bIsFlashlight ^ IsSlotZero);
 }
 
-FSlot UInventoryComponent::GetSlot(const int32 SlotNumber)
+FSlot* UInventoryComponent::GetSlot(const int32 SlotNumber)
 {
-	FSlot Slot = FSlot();
-	if (!Inventory.IsEmpty())
+	return Inventory.FindByPredicate([SlotNumber](const FSlot& Slot)
 	{
-		FSlot* FoundSlot = Inventory.FindByPredicate([SlotNumber](const FSlot& Slot)
-		{
-			return Slot.SlotNumber == SlotNumber;
-		});
-		if (FoundSlot)
-		{
-			Slot = *FoundSlot;
-		}
-	}
-	return Slot;
+		return Slot.SlotNumber == SlotNumber;
+	});
 }

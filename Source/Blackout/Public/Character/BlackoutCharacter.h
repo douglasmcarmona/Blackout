@@ -34,6 +34,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsInventoryOpen = false;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bIsReadingNote = false;
 
 protected:
 	virtual void BeginPlay() override;

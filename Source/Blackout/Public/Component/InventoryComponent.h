@@ -9,6 +9,21 @@
 class UInventorySlot;
 
 USTRUCT(BlueprintType)
+struct FSlotData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadWrite)
+	TMap<FString, int32> IntegerValues;
+	
+	UPROPERTY(BlueprintReadWrite)
+	TMap<FString, float> FloatValues;
+	
+	UPROPERTY(BlueprintReadWrite)
+	TMap<FString, bool> BoolValues;
+};
+
+USTRUCT(BlueprintType)
 struct FSlot
 {
 	GENERATED_BODY()
@@ -21,6 +36,9 @@ struct FSlot
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UTexture2D> SlotIcon = nullptr;
+	
+	UPROPERTY(BlueprintReadWrite)
+	FSlotData SlotData;
 
 	bool operator==(const FSlot& Other) const
 	{
@@ -29,8 +47,8 @@ struct FSlot
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemStored, const FSlot&, const bool);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemWithdrew, const int32)
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnFlashlightStored, const float, const bool, const float)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnItemWithdrawn, const int32)
+DECLARE_MULTICAST_DELEGATE(FOnFlashlightStored)
 
 UCLASS( ClassGroup=(Custom), Blueprintable, meta=(BlueprintSpawnableComponent) )
 class BLACKOUT_API UInventoryComponent : public UActorComponent
@@ -44,20 +62,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight);
-
-	UFUNCTION(BlueprintCallable)
-	FSlot GetSlot(const int32 SlotNumber);
-
+	
+	FSlot* GetSlot(const int32 SlotNumber);
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 InventorySize = 5;
 	
 	FOnItemStored OnItemStored;
-	FOnItemWithdrew OnItemWithdrew;
+	FOnItemWithdrawn OnItemWithdrawn;
 	FOnFlashlightStored OnFlashlightStored;
 	
-	float BatteryPercentage;
-	bool bIsFlashlightOn;
-
 private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<FSlot> Inventory;

@@ -22,24 +22,6 @@ class BLACKOUT_API IFlashlightInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	float GetBatteryPercentage() const;
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta=(ForceAsFunction))
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta=(ForceAsFunction), Category="Flashlight")
 	void SetBatteryPercentage(const float Percent);
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	bool IsFlashlightOn() const;
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	float GetDischargeRate() const;
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta=(ForceAsFunction))
-	void Initialize();
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta=(ForceAsFunction))
-	void TurnOn();
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta=(ForceAsFunction))
-	void TurnOff();
 };

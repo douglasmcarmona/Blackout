@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "InteractionInterface.generated.h"
 
+struct FSlotData;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UInteractionInterface : public UInterface
@@ -22,10 +23,10 @@ class BLACKOUT_API IInteractionInterface
 
 	
 public:	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hightlight")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Hightlight")
 	void Highlight();
 	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hightlight")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Hightlight")
 	void Unhighlight();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
@@ -47,5 +48,11 @@ public:
 	void PreparePickup();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	UTexture2D* GetIcon();	
+	UTexture2D* GetIcon();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Inventory", meta = (ForceAsFunction))
+	void HandleStoredItemSlotData(UPARAM(ref) FSlotData& SlotData);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Inventory", meta = (ForceAsFunction))
+	void HandleWithdrawnItemSlotData(const FSlotData& SlotData);	
 };

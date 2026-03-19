@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Component/InventoryComponent.h"
 
 #include "Interaction/FlashlightInterface.h"
@@ -15,6 +12,8 @@ UInventoryComponent::UInventoryComponent()
 
 void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 {
+	if (Inventory.Num() >= InventorySize) return;
+		
 	AActor* StoredItem = bIsRightHand ? 
 		IHandInterface::Execute_GetRightHandItem(GetOwner()) :
 		StoredItem = IHandInterface::Execute_GetLeftHandItem(GetOwner());
@@ -26,7 +25,12 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 	SlotNumber = bIsFlashlight ? 0 : SlotNumber;
 	if (!IsSlotAvailable(SlotNumber, bIsFlashlight)) return;
 	
-	FSlot NewSlot = FSlot(SlotNumber, StoredItem->GetClass(), IInteractionInterface::Execute_GetIcon(StoredItem), FSlotData());
+	FSlot NewSlot = FSlot(
+		SlotNumber,
+		StoredItem->GetClass(),
+		IInteractionInterface::Execute_GetIcon(StoredItem),
+		FSlotData());
+	
 	IInteractionInterface::Execute_HandleStoredItemSlotData(StoredItem, NewSlot.SlotData);
 	Inventory.Add(NewSlot);
 	if (bIsFlashlight)
@@ -38,6 +42,8 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 
 void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRightHand)
 {
+	if (Inventory.IsEmpty()) return;
+	
 	const FSlot* FoundSlot = GetSlot(SlotNumber);
 	if (!FoundSlot) return;
 	if (IHandInterface::Execute_IsHandHoldingItem(GetOwner(), bIsRightHand)) return;

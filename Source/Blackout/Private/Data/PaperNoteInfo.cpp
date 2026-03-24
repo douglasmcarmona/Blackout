@@ -12,5 +12,5 @@ FPaperNote UPaperNoteInfo::FindPaperNoteById(int32 PaperNoteId)
 			return PaperNote;
 		}
 	}
-	return FPaperNote();	
+	return FPaperNote();
 }

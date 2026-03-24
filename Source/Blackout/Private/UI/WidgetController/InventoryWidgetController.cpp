@@ -39,28 +39,7 @@ void UInventoryWidgetController::SetInventoryComponent(UInventoryComponent* InIn
 	{
 		OnItemWithdrewDelegate.Broadcast(SlotNumber);
 	});
-	InventoryComponent->OnFlashlightStored.AddLambda([this]
-	{
-		FSlot* FlashlightSlot = InventoryComponent->GetSlot(0);
-		float BatteryPercentage = *FlashlightSlot->SlotData.FloatValues.Find(FString(BATTERY_PERCENTAGE_MAP_KEY));
-		const bool bIsFlashlightOn = *FlashlightSlot->SlotData.BoolValues.Find(FString(IS_FLASHLIGHT_ON_MAP_KEY));
-		OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
-		if (bIsFlashlightOn)
-		{
-			const float BatteryDischargeRate = *FlashlightSlot->SlotData.FloatValues.Find(FString(DISCHARGE_RATE_MAP_KEY));
-			GetWorld()->GetTimerManager().SetTimer(
-				BatteryDischargeTimerHandle,
-				[this, BatteryPercentage]() mutable
-				{
-					BatteryPercentage = FMath::Clamp(--BatteryPercentage, 0.f, 100.f);
-					InventoryComponent->GetSlot(0)->SlotData.FloatValues.Add(FString(BATTERY_PERCENTAGE_MAP_KEY), BatteryPercentage);
-					OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
-				},
-				BatteryDischargeRate,
-				true
-				);
-		}
-	});
+	InventoryComponent->OnFlashlightStored.AddUObject(this, &UInventoryWidgetController::DischargeFlashlightBattery);
 }
 
 void UInventoryWidgetController::LoadInventory() const
@@ -80,4 +59,27 @@ void UInventoryWidgetController::LoadInventory() const
 UWorld* UInventoryWidgetController::GetWorld() const
 {
 	return GetOuter()->GetWorld();
+}
+
+void UInventoryWidgetController::DischargeFlashlightBattery()
+{
+	FSlot* FlashlightSlot = InventoryComponent->GetSlot(0);
+	float BatteryPercentage = *FlashlightSlot->SlotData.FloatValues.Find(FString(BATTERY_PERCENTAGE_MAP_KEY));
+	const bool bIsFlashlightOn = *FlashlightSlot->SlotData.BoolValues.Find(FString(IS_FLASHLIGHT_ON_MAP_KEY));
+	OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
+	if (bIsFlashlightOn)
+	{
+		const float BatteryDischargeRate = *FlashlightSlot->SlotData.FloatValues.Find(FString(DISCHARGE_RATE_MAP_KEY));
+		GetWorld()->GetTimerManager().SetTimer(
+			BatteryDischargeTimerHandle,
+			[this, BatteryPercentage]() mutable
+			{
+				BatteryPercentage = FMath::Clamp(--BatteryPercentage, 0.f, 100.f);
+				InventoryComponent->GetSlot(0)->SlotData.FloatValues.Add(FString(BATTERY_PERCENTAGE_MAP_KEY), BatteryPercentage);
+				OnFlashlightBatteryChangedDelegate.Broadcast(BatteryPercentage);
+			},
+			BatteryDischargeRate,
+			true
+			);
+	}
 }

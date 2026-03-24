@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Character/BlackoutCharacter.h"
 
 #include "EnhancedInputComponent.h"
@@ -12,7 +9,6 @@
 #include "Player/BlackoutPlayerController.h"
 #include "UI/HUD/BlackoutHUD.h"
 
-// Sets default values
 ABlackoutCharacter::ABlackoutCharacter()
 { 	
 	PrimaryActorTick.bCanEverTick = true;
@@ -54,6 +50,65 @@ void ABlackoutCharacter::BeginPlay()
 			LeftHandItem->Destroy();
 		}
 	});
+}
+
+void ABlackoutCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (bIsInventoryOpen || bIsReadingNote) return;
+	
+	const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, EyesightZ);
+	const FVector TraceEnd = TraceStart + GetControlRotation().Vector() * MaxInteractableDistance;
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	const FCollisionShape SphereCollision = FCollisionShape::MakeSphere(InteractionRadius);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActors(ActorsToIgnore);
+	
+	GetWorld()->SweepSingleByChannel(
+		HitResult,
+		TraceStart,
+		TraceEnd,
+		FQuat::Identity,
+		ECC_Visibility,
+		SphereCollision,
+		CollisionParams
+		);
+
+	if (HitResult.bBlockingHit)
+	{
+		LastActor = ThisActor;
+		if (IsInteractableActor(HitResult.GetActor())) ThisActor = HitResult.GetActor();
+		else ThisActor = nullptr;
+
+		if (ThisActor != LastActor)
+		{
+			if (IsInteractableActor(LastActor)){ IInteractionInterface::Execute_Unhighlight(LastActor); }
+			if (IsInteractableActor(ThisActor)){ IInteractionInterface::Execute_Highlight(ThisActor); }
+		}
+	}
+	else
+	{
+		if (IsInteractableActor(LastActor)){ IInteractionInterface::Execute_Unhighlight(LastActor); }
+	}	
+}
+
+void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Move);
+		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this,  &ABlackoutCharacter::LookAround);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Interact);
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);				
+		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableThrow);
+		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::EnableThrow);
+		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::ToggleInventory);
+	}
 }
 
 void ABlackoutCharacter::Move(const FInputActionValue& InputValue)
@@ -100,65 +155,6 @@ void ABlackoutCharacter::Interact()
 			}
 		}
 	}
-}
-
-void ABlackoutCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this,  &ABlackoutCharacter::LookAround);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::Interact);
-		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::UseItem);				
-		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Triggered, this, &ABlackoutCharacter::EnableThrow);
-		EnhancedInputComponent->BindAction(EnableThrowAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::EnableThrow);
-		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Completed, this,  &ABlackoutCharacter::ToggleInventory);
-	}
-}
-
-void ABlackoutCharacter::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (bIsInventoryOpen || bIsReadingNote) return;
-	
-	const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, EyesightZ);
-	const FVector TraceEnd = TraceStart + GetControlRotation().Vector() * MaxInteractableDistance;
-	FHitResult HitResult;
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-
-	const FCollisionShape SphereCollision = FCollisionShape::MakeSphere(InteractionRadius);
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActors(ActorsToIgnore);
-	
-	GetWorld()->SweepSingleByChannel(
-		HitResult,
-		TraceStart,
-		TraceEnd,
-		FQuat::Identity,
-		ECC_Visibility,
-		SphereCollision,
-		CollisionParams
-		);
-
-	if (HitResult.bBlockingHit)
-	{
-		LastActor = ThisActor;
-		if (IsInteractableActor(HitResult.GetActor())) ThisActor = HitResult.GetActor();
-		else ThisActor = nullptr;
-
-		if (ThisActor != LastActor)
-		{
-			if (IsInteractableActor(LastActor)){ IInteractionInterface::Execute_Unhighlight(LastActor); }
-			if (IsInteractableActor(ThisActor)){ IInteractionInterface::Execute_Highlight(ThisActor); }
-		}
-	}
-	else
-	{
-		if (IsInteractableActor(LastActor)){ IInteractionInterface::Execute_Unhighlight(LastActor); }
-	}	
 }
 
 bool ABlackoutCharacter::IsInteractableActor(const AActor* Actor) const

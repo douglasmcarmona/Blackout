@@ -42,17 +42,7 @@ void ABlackoutCharacter::BeginPlay()
 	checkf(EnableThrowAction, TEXT("Please fill in EnableThrowAction"));
 	checkf(ToggleInventoryAction, TEXT("Please fill in ToggleInventoryAction"));
 
-	InventoryComponent->OnItemStored.AddLambda([this](const FSlot& InSlot, const bool bIsRightHand)
-	{	
-		if (bIsRightHand)
-		{
-			RightHandItem->Destroy();
-		}
-		else
-		{
-			LeftHandItem->Destroy();
-		}
-	});
+	InventoryComponent->OnItemStored.AddUObject(this, &ABlackoutCharacter::ItemStored);
 	LoadInventory();
 }
 
@@ -265,23 +255,15 @@ AActor* ABlackoutCharacter::DropRightHandItem_Implementation()
 }
 
 void ABlackoutCharacter::SaveInventory()
-{
+{	
+	SaveHandItems();
 	UInventoryItemInfo* InventoryItemInfo = UBlackoutFunctionLibrary::GetInventoryItemInfo(this);
-	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();	
-	if (!(InventoryItemInfo && BlackoutGameInstance)) return;
-
-	if (const FSlot* FlashlightSlot = InventoryComponent->GetSlot(0))
-	{
-		BlackoutGameInstance->SaveInventorySlotData(
-			0,
-			FString("Flashlight"),
-			FlashlightSlot->SlotData.IntegerValues,
-			FlashlightSlot->SlotData.FloatValues,
-			FlashlightSlot->SlotData.BoolValues);
-	}
+	if (!InventoryItemInfo) return;
 	
-	for (int32 i=1; i<InventoryComponent->InventorySize; i++)
-	{		
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	
+	for (int32 i=0; i<InventoryComponent->InventorySize+2; i++)
+	{
 		if (const FSlot* Slot = InventoryComponent->GetSlot(i))
 		{			
 			BlackoutGameInstance->SaveInventorySlotData(
@@ -289,9 +271,39 @@ void ABlackoutCharacter::SaveInventory()
 			InventoryItemInfo->GetInventoryItemByClass(Slot->SlotItemClass)->ItemName,
 			Slot->SlotData.IntegerValues,
 			Slot->SlotData.FloatValues,
-			Slot->SlotData.BoolValues);	
+			Slot->SlotData.BoolValues);
 		}
 	}
+}
+
+void ABlackoutCharacter::SaveHandItems()
+{	
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	InventoryComponent->OnItemStored.Clear();	
+	
+	int32 RightHandItemSlot = InventoryComponent->InventorySize;
+	int32 LeftHandItemSlot = InventoryComponent->InventorySize + 1;	
+	
+	InventoryComponent->OnItemStored.AddLambda([&RightHandItemSlot, &LeftHandItemSlot](const FSlot& Slot, const bool bIsRightHand)
+	{
+		if (bIsRightHand)
+		{
+			RightHandItemSlot = Slot.SlotNumber == 0 ? 0 : RightHandItemSlot;
+		}
+		else
+		{
+			LeftHandItemSlot = Slot.SlotNumber == 0 ? 0 : LeftHandItemSlot;
+		}
+	});
+	
+	InventoryComponent->StoreItem(InventoryComponent->InventorySize, true);	
+	InventoryComponent->StoreItem(InventoryComponent->InventorySize + 1, false);
+	
+	InventoryComponent->OnItemStored.RemoveAll(this);
+	InventoryComponent->OnItemStored.AddUObject(this, &ABlackoutCharacter::ItemStored); 
+	
+	BlackoutGameInstance->RightHandItemInventorySlotNumber = RightHandItemSlot;
+	BlackoutGameInstance->LeftHandItemInventorySlotNumber = LeftHandItemSlot;
 }
 
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
@@ -354,7 +366,7 @@ void ABlackoutCharacter::LoadInventory() const
 	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
 	if (!BlackoutGameInstance) return;
 	
-	for (int i=0; i<InventoryComponent->InventorySize; i++)
+	for (int i=0; i<InventoryComponent->InventorySize+2; i++)
 	{
 		FString ItemName;
 		TMap<FString, int32> IntegerMap;
@@ -366,5 +378,29 @@ void ABlackoutCharacter::LoadInventory() const
 			InventoryComponent->RestoreItem(i, ItemName, IntegerMap, FloatMap, BoolMap);
 		}
 	}
+	LoadHandItems();
 	BlackoutGameInstance->InventoryEmpty();
+}
+
+void ABlackoutCharacter::LoadHandItems() const
+{
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();	
+	
+	InventoryComponent->WithdrawItem(BlackoutGameInstance->RightHandItemInventorySlotNumber, true);
+	InventoryComponent->WithdrawItem(BlackoutGameInstance->LeftHandItemInventorySlotNumber, false);
+	
+	BlackoutGameInstance->RightHandItemInventorySlotNumber = -1;
+	BlackoutGameInstance->LeftHandItemInventorySlotNumber = -1;
+}
+
+void ABlackoutCharacter::ItemStored(const FSlot& StoredItem, const bool bIsRightHand) const
+{
+	if (bIsRightHand)
+	{
+		RightHandItem->Destroy();
+	}
+	else
+	{
+		LeftHandItem->Destroy();
+	}
 }

@@ -6,6 +6,7 @@
 #include "Interaction/HandInterface.h"
 #include "BlackoutCharacter.generated.h"
 
+struct FSlot;
 class UInventoryComponent;
 struct FInputActionValue;
 class UInputAction;
@@ -245,18 +246,33 @@ private:
 	void ToggleInventory();
 
 	/**
-	 * Callback binded to the OnDestroyed delegate of RightHandItem and LeftHandItem properties. Properly reset the pointers 
+	 * Callback bound functions to the OnDestroyed delegate of RightHandItem and LeftHandItem properties. Properly reset the pointers 
 	 * @param DestroyedItem The item that was destroyed
 	 */
 	UFUNCTION()
 	void OnItemDestroyed(AActor* DestroyedItem);
-
+	
+	/**
+	 * Saves state for items the player may be holding upon changing levels
+	 */
+	void SaveHandItems();
+	
+	/**
+	 * Recreates the inventory after switching levels
+	 */	
+	void LoadInventory() const;
 
 	/**
-	 * Persists the current state of the inventory onto the GameInstance object in order to keep its consistency when switching
-	 * levels in the game
+	 * Respawns items held by the player when a level switch occured 
 	 */
-	void LoadInventory() const;
+	void LoadHandItems() const;
+
+	/**
+	 * (InventoryComponent::OnItemStored callback) Handles local properties after an item has been stored in the inventory
+	 * @param StoredItem The storable actor that was stored (now in inventory item form) 
+	 * @param bIsRightHand True if the player was holding the item with their right hand. False if it was the left hand instead
+	 */
+	void ItemStored(const FSlot& StoredItem, const bool bIsRightHand) const;
 
 	/**
 	 * Enables and disables the ThrowItem action

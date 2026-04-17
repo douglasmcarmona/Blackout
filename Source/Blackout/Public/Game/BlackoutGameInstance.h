@@ -80,6 +80,12 @@ public:
 	bool LoadInventorySlotData(const int32 SlotNumber, FString& ItemName, TMap<FString, int32>& IntegerMap, TMap<FString, float>& FloatMap, TMap<FString, bool>& BoolMap);
 	void InventoryEmpty() { InventoryData.Empty(); }
 	
+	// Saves the number of the slot where the item in player's right hand now is
+	int32 RightHandItemInventorySlotNumber;
+	
+	// Saves the number of the slot where the item in player's left hand now is
+	int32 LeftHandItemInventorySlotNumber;
+	
 private:
 	// The inventory's data-only representation
 	TArray<FInventorySlotData> InventoryData;

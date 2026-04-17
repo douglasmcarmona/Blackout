@@ -57,6 +57,9 @@ public:
 	
 	// HandInterface override
 	virtual AActor* DropRightHandItem_Implementation() override;
+	
+	// HandInterface override
+	virtual void SaveInventory() override;
 
 	/**
 	 * Indicates if the player is browsing the inventory at the moment. All other actions are blocked if that's the case
@@ -143,7 +146,7 @@ protected:
 	 * Simulates the position of the player's eyes
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
-	float EyesightZ = 50.f;
+	float EyesightZ = 90.f;
 
 	/**
 	 * An InteractableActor can be interacted with if the player is less or equal than this distance away from it 
@@ -247,6 +250,13 @@ private:
 	 */
 	UFUNCTION()
 	void OnItemDestroyed(AActor* DestroyedItem);
+
+
+	/**
+	 * Persists the current state of the inventory onto the GameInstance object in order to keep its consistency when switching
+	 * levels in the game
+	 */
+	void LoadInventory() const;
 
 	/**
 	 * Enables and disables the ThrowItem action

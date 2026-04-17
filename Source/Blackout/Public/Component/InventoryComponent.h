@@ -109,13 +109,22 @@ public:
 	void StoreItem(int32 SlotNumber, const bool bIsRightHand);
 
 	/**
-	 * 
-	 * @param SlotNumber Tries and withdraws an item from the given slot
+	 * Tries and withdraws an item from the given slot
+	 * @param SlotNumber The slot the wished item is in
 	 * @param bIsRightHand True if the withdrawn item must be placed into the player's right hand. False if it must be the
 	 * left hand instead
 	 */
 	void WithdrawItem(const int32 SlotNumber, const bool bIsRightHand);
 
+	/**
+	 * Stores an item back in the inventory while loading itself after a level switch
+	 * @param SlotNumber The inventory slot the restored item should take
+	 * @param ItemName Used to get the item's icon and class
+	 * @param IntegerMap Arbitrary integer data 
+	 * @param FloatMap Arbitrary float data
+	 * @param BoolMap Arbitrary boolean data
+	 */
+	void RestoreItem(const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap);
 	/**
 	 * Checks if the given slot is not already taken by an item. A storage attempt on a taken slot results in failure
 	 * @param SlotNumber The slot to be checked for availability

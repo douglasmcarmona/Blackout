@@ -4,10 +4,13 @@
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "Component/InventoryComponent.h"
+#include "Data/InventoryItemInfo.h"
+#include "Game/BlackoutGameInstance.h"
 #include "Interaction/InteractionInterface.h"
 #include "Interaction/UsageInterface.h"
 #include "Player/BlackoutPlayerController.h"
 #include "UI/HUD/BlackoutHUD.h"
+#include "Util/BlackoutFunctionLibrary.h"
 
 ABlackoutCharacter::ABlackoutCharacter()
 { 	
@@ -50,6 +53,7 @@ void ABlackoutCharacter::BeginPlay()
 			LeftHandItem->Destroy();
 		}
 	});
+	LoadInventory();
 }
 
 void ABlackoutCharacter::Tick(float DeltaSeconds)
@@ -260,6 +264,36 @@ AActor* ABlackoutCharacter::DropRightHandItem_Implementation()
 	return DetachedActor;
 }
 
+void ABlackoutCharacter::SaveInventory()
+{
+	UInventoryItemInfo* InventoryItemInfo = UBlackoutFunctionLibrary::GetInventoryItemInfo(this);
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();	
+	if (!(InventoryItemInfo && BlackoutGameInstance)) return;
+
+	if (const FSlot* FlashlightSlot = InventoryComponent->GetSlot(0))
+	{
+		BlackoutGameInstance->SaveInventorySlotData(
+			0,
+			FString("Flashlight"),
+			FlashlightSlot->SlotData.IntegerValues,
+			FlashlightSlot->SlotData.FloatValues,
+			FlashlightSlot->SlotData.BoolValues);
+	}
+	
+	for (int32 i=1; i<InventoryComponent->InventorySize; i++)
+	{		
+		if (const FSlot* Slot = InventoryComponent->GetSlot(i))
+		{			
+			BlackoutGameInstance->SaveInventorySlotData(
+			i,
+			InventoryItemInfo->GetInventoryItemByClass(Slot->SlotItemClass)->ItemName,
+			Slot->SlotData.IntegerValues,
+			Slot->SlotData.FloatValues,
+			Slot->SlotData.BoolValues);	
+		}
+	}
+}
+
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 {
 	if (bIsThrowEnabled || bIsInventoryOpen) return;
@@ -313,4 +347,24 @@ void ABlackoutCharacter::OnItemDestroyed(AActor* DestroyedItem)
 {
 	if (DestroyedItem == RightHandItem) RightHandItem = nullptr;
 	else if (DestroyedItem == LeftHandItem) LeftHandItem = nullptr;
+}
+
+void ABlackoutCharacter::LoadInventory() const
+{
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	if (!BlackoutGameInstance) return;
+	
+	for (int i=0; i<InventoryComponent->InventorySize; i++)
+	{
+		FString ItemName;
+		TMap<FString, int32> IntegerMap;
+		TMap<FString, float> FloatMap;
+		TMap<FString, bool> BoolMap;
+		
+		if (BlackoutGameInstance->LoadInventorySlotData(i, ItemName, IntegerMap, FloatMap, BoolMap))
+		{
+			InventoryComponent->RestoreItem(i, ItemName, IntegerMap, FloatMap, BoolMap);
+		}
+	}
+	BlackoutGameInstance->InventoryEmpty();
 }

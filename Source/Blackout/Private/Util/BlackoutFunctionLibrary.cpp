@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Util/BlackoutFunctionLibrary.h"
 
 #include "Game/BlackoutGameMode.h"
@@ -11,6 +8,15 @@ UPaperNoteInfo* UBlackoutFunctionLibrary::GetPaperNoteInfo(const UObject* WorldC
 	if (ABlackoutGameMode* GameMode = Cast<ABlackoutGameMode>(UGameplayStatics::GetGameMode(WorldContextObject)))
 	{
 		return GameMode->PaperNoteInformation;
+	}
+	return nullptr;
+}
+
+UInventoryItemInfo* UBlackoutFunctionLibrary::GetInventoryItemInfo(const UObject* WorldContextObject)
+{
+	if (ABlackoutGameMode* GameMode = Cast<ABlackoutGameMode>(UGameplayStatics::GetGameMode(WorldContextObject)))
+	{
+		return GameMode->InventoryItemInformation;
 	}
 	return nullptr;
 }

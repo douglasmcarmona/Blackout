@@ -77,5 +77,10 @@ public:
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hand")
 	FVector GetHandLocation(const bool bIsRightHand) const;
+
+	/**
+	 * Allows calling objects to tell implementing classes to save the current state of the inventory into the GameInstance  
+	 */
+	virtual void SaveInventory() {}
 	
 };

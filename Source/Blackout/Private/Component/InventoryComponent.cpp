@@ -1,8 +1,10 @@
 #include "Component/InventoryComponent.h"
 
+#include "Data/InventoryItemInfo.h"
 #include "Interaction/FlashlightInterface.h"
 #include "Interaction/HandInterface.h"
 #include "Interaction/InteractionInterface.h"
+#include "Util/BlackoutFunctionLibrary.h"
 
 UInventoryComponent::UInventoryComponent()
 {	
@@ -71,6 +73,27 @@ void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRig
 	IInteractionInterface::Execute_HandleWithdrawnItemSlotData(WithdrawnItem, FoundSlot->SlotData);
 	Inventory.RemoveSingle(*FoundSlot);
 	OnItemWithdrawn.Broadcast(SlotNumber);
+}
+
+void UInventoryComponent::RestoreItem(const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap,
+	const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap)
+{
+	UInventoryItemInfo* InventoryItemInfo = UBlackoutFunctionLibrary::GetInventoryItemInfo(GetOwner());
+	if (!InventoryItemInfo) return;
+	
+	FInventoryItem* InventoryItem = InventoryItemInfo->GetInventoryItemByName(ItemName);
+	if (!InventoryItem) return;
+	
+	FSlot Slot = FSlot();
+	Slot.SlotNumber = SlotNumber;
+	Slot.SlotItemClass = InventoryItem->ItemClass;
+	Slot.SlotIcon = InventoryItem->ItemIcon;
+	FSlotData SlotData = FSlotData();
+	SlotData.IntegerValues.Append(IntegerMap);
+	SlotData.FloatValues.Append(FloatMap);
+	SlotData.BoolValues.Append(BoolMap);
+	Slot.SlotData = SlotData;
+	Inventory.Add(Slot);
 }
 
 bool UInventoryComponent::IsSlotAvailable(const int32 SlotNumber, const bool bIsFlashlight)

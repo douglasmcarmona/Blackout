@@ -78,13 +78,44 @@ public:
 	 * @return True if the item was retrieved successfully. False otherwise
 	 */
 	bool LoadInventorySlotData(const int32 SlotNumber, FString& ItemName, TMap<FString, int32>& IntegerMap, TMap<FString, float>& FloatMap, TMap<FString, bool>& BoolMap);
+
+	/**
+	 * Empties the inventory
+	 */
 	void InventoryEmpty() { InventoryData.Empty(); }
+
+	/**
+	 * Keep track of an interactable actor that was turned into an inventory item. In that case, the actor must not be
+	 * spawned again when its original level loads a second time
+	 * @param MapName The name of the level where the actor was picked up from and stored 
+	 * @param Guid The actor's identifier
+	 */
+	void AddToLevelStoredItems(const FString& MapName, const FGuid& Guid);
+
+	/**
+	 * Stops tracking of an item that was withdrawn from the inventory. Otherwise, the related actor cannot be spawned in
+	 * the level
+	 * @param MapName The name of the level where the actor was picked up from and previously stored 
+	 * @param Guid The actor's identifier
+	 */
+	void RemoveFromLevelStoredItems(const FString& MapName, const FGuid& Guid);
+
+	/**
+	 * Checks if a particular interactable item is already being tracked for level consistency
+	 * @param MapName The name of the map to be checked for
+	 * @param Guid The identifier of the actor being evaluated
+	 * @return True if the actor is already being tracked. False otherwise
+	 */
+	bool DoesMapHaveGuid(const FString& MapName, const FGuid& Guid) const;
 	
 	// Saves the number of the slot where the item in player's right hand now is
 	int32 RightHandItemInventorySlotNumber;
 	
 	// Saves the number of the slot where the item in player's left hand now is
 	int32 LeftHandItemInventorySlotNumber;
+	
+	// Keeps a list of interactable actors in each level that were stored in the inventory before a level switch
+	TMap<FString, TSet<FGuid>> LevelStoredItems;
 	
 private:
 	// The inventory's data-only representation

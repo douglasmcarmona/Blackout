@@ -3,6 +3,8 @@
 
 #include "Actor/InteractableActor.h"
 
+#include "Game/BlackoutGameInstance.h"
+
 // Sets default values
 AInteractableActor::AInteractableActor()
 { 	
@@ -11,6 +13,17 @@ AInteractableActor::AInteractableActor()
 	SetRootComponent(Mesh);
 	Mesh->CustomDepthStencilValue = CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE;
 	HandleDrop();
+	PersistentGuid = FGuid::NewGuid();
+}
+
+void AInteractableActor::BeginPlay()
+{
+	Super::BeginPlay();
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	if (BlackoutGameInstance->DoesMapHaveGuid(GetWorld()->GetMapName(), PersistentGuid))
+	{
+		Destroy();
+	}
 }
 
 void AInteractableActor::Highlight_Implementation()
@@ -62,8 +75,14 @@ UTexture2D* AInteractableActor::GetIcon_Implementation()
 	return InventoryIcon;
 }
 
+FGuid AInteractableActor::GetGuid_Implementation()
+{
+	return PersistentGuid;
+}
+
 void AInteractableActor::HandleDrop()
 {
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
+

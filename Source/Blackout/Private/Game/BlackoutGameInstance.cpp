@@ -35,3 +35,27 @@ bool UBlackoutGameInstance::LoadInventorySlotData(const int32 SlotNumber, FStrin
 	return false;
 }
 
+void UBlackoutGameInstance::AddToLevelStoredItems(const FString& MapName, const FGuid& Guid)
+{
+	if (TSet<FGuid>* MapActorGuids = LevelStoredItems.Find(MapName))
+	{
+		MapActorGuids->Add(Guid);
+	}
+}
+
+void UBlackoutGameInstance::RemoveFromLevelStoredItems(const FString& MapName, const FGuid& Guid)
+{
+	if (TSet<FGuid>* MapActorGuids = LevelStoredItems.Find(MapName))
+	{
+		MapActorGuids->Remove(Guid);
+	}
+}
+
+bool UBlackoutGameInstance::DoesMapHaveGuid(const FString& MapName, const FGuid& Guid) const
+{
+	if (const TSet<FGuid>* MapActorGuids = LevelStoredItems.Find(MapName))
+	{
+		return MapActorGuids->Contains(Guid);
+	}
+	return false;
+}

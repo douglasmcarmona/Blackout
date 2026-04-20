@@ -18,6 +18,7 @@ class BLACKOUT_API AInteractableActor : public AActor, public IInteractionInterf
 	
 public:
 	AInteractableActor();
+	
 	// InteractionInterface override
 	virtual void Highlight_Implementation() override;
 	
@@ -44,7 +45,10 @@ public:
 	
 	// InteractionInterface override
 	virtual UTexture2D* GetIcon_Implementation() override;
-
+	
+	// InteractionInterface override
+	virtual FGuid GetGuid_Implementation() override;
+	
 	/**
 	 * When called, performs the required settings to become interactable again in the world, mainly after being thrown away
 	 * by the player
@@ -53,6 +57,9 @@ public:
 	void HandleDrop();
 	
 protected:
+	// Actor override
+	virtual void BeginPlay() override;
+	
 	/**
 	 * Hints the player that they can interact with the actor, in case they're within the interaction range
 	 */
@@ -97,5 +104,11 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UTexture2D> InventoryIcon;
+
+	/**
+	 * A unique identifier used to track the actor's state, regarding world transform and inventory storage  
+	 */
+	UPROPERTY(VisibleAnywhere, Category="InteractableActor")
+	FGuid PersistentGuid;
 };
 

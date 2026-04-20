@@ -97,5 +97,12 @@ public:
 	 * @param SlotData The data structure to be retrieved from the slot
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Inventory", meta = (ForceAsFunction))
-	void HandleWithdrawnItemSlotData(const FSlotData& SlotData);	
+	void HandleWithdrawnItemSlotData(const FSlotData& SlotData);
+
+	/**
+	 * Handy function to return PersistentGuid property value
+	 * @return The unique identifier related to the implementing object
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Inventory")
+	FGuid GetGuid();
 };

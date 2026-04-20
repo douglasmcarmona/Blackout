@@ -44,4 +44,8 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
+	
+protected:
+	// Actor override
+	virtual void BeginPlay() override;
 };

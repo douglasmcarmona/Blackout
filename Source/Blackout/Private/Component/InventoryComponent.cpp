@@ -1,6 +1,7 @@
 #include "Component/InventoryComponent.h"
 
 #include "Data/InventoryItemInfo.h"
+#include "Game/BlackoutGameInstance.h"
 #include "Interaction/FlashlightInterface.h"
 #include "Interaction/HandInterface.h"
 #include "Interaction/InteractionInterface.h"
@@ -39,6 +40,9 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 	{		
 		OnFlashlightStored.Broadcast();
 	}
+	
+	UBlackoutGameInstance* BlackoutGameInstance = GetOwner()->GetGameInstance<UBlackoutGameInstance>();
+	BlackoutGameInstance->AddToLevelStoredItems(GetWorld()->GetMapName(), IInteractionInterface::Execute_GetGuid(StoredItem));
 	OnItemStored.Broadcast(NewSlot, bIsRightHand);
 }
 
@@ -72,6 +76,9 @@ void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRig
 	WithdrawnItem->FinishSpawning(Transform);
 	IInteractionInterface::Execute_HandleWithdrawnItemSlotData(WithdrawnItem, FoundSlot->SlotData);
 	Inventory.RemoveSingle(*FoundSlot);
+	
+	UBlackoutGameInstance* BlackoutGameInstance = GetOwner()->GetGameInstance<UBlackoutGameInstance>();
+	BlackoutGameInstance->RemoveFromLevelStoredItems(GetWorld()->GetMapName(), IInteractionInterface::Execute_GetGuid(WithdrawnItem));
 	OnItemWithdrawn.Broadcast(SlotNumber);
 }
 

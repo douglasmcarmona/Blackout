@@ -29,6 +29,7 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 	if (!IsSlotAvailable(SlotNumber, bIsFlashlight)) return;
 	
 	FSlot NewSlot = FSlot(
+		IInteractionInterface::Execute_GetPersistentGuid(StoredItem),
 		SlotNumber,
 		StoredItem->GetClass(),
 		IInteractionInterface::Execute_GetIcon(StoredItem),
@@ -41,8 +42,6 @@ void UInventoryComponent::StoreItem(int32 SlotNumber, const bool bIsRightHand)
 		OnFlashlightStored.Broadcast();
 	}
 	
-	UBlackoutGameInstance* BlackoutGameInstance = GetOwner()->GetGameInstance<UBlackoutGameInstance>();
-	BlackoutGameInstance->AddToLevelStoredItems(GetWorld()->GetMapName(), IInteractionInterface::Execute_GetGuid(StoredItem));
 	OnItemStored.Broadcast(NewSlot, bIsRightHand);
 }
 
@@ -74,15 +73,14 @@ void UInventoryComponent::WithdrawItem(const int32 SlotNumber, const bool bIsRig
 	}
 	
 	WithdrawnItem->FinishSpawning(Transform);
+	IInteractionInterface::Execute_SetPersistentGuid(WithdrawnItem, FoundSlot->PersistentGuid);
+	IInteractionInterface::Execute_SetIsIsOriginalState(WithdrawnItem, false);
 	IInteractionInterface::Execute_HandleWithdrawnItemSlotData(WithdrawnItem, FoundSlot->SlotData);
 	Inventory.RemoveSingle(*FoundSlot);
-	
-	UBlackoutGameInstance* BlackoutGameInstance = GetOwner()->GetGameInstance<UBlackoutGameInstance>();
-	BlackoutGameInstance->RemoveFromLevelStoredItems(GetWorld()->GetMapName(), IInteractionInterface::Execute_GetGuid(WithdrawnItem));
 	OnItemWithdrawn.Broadcast(SlotNumber);
 }
 
-void UInventoryComponent::RestoreItem(const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap,
+void UInventoryComponent::RestoreItem(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap,
 	const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap)
 {
 	UInventoryItemInfo* InventoryItemInfo = UBlackoutFunctionLibrary::GetInventoryItemInfo(GetOwner());
@@ -92,6 +90,7 @@ void UInventoryComponent::RestoreItem(const int32 SlotNumber, const FString& Ite
 	if (!InventoryItem) return;
 	
 	FSlot Slot = FSlot();
+	Slot.PersistentGuid = PersistentGuid;
 	Slot.SlotNumber = SlotNumber;
 	Slot.SlotItemClass = InventoryItem->ItemClass;
 	Slot.SlotIcon = InventoryItem->ItemIcon;

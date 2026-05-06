@@ -43,7 +43,7 @@ void ABlackoutCharacter::BeginPlay()
 	checkf(ToggleInventoryAction, TEXT("Please fill in ToggleInventoryAction"));
 
 	InventoryComponent->OnItemStored.AddUObject(this, &ABlackoutCharacter::ItemStored);
-	LoadInventory();
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ABlackoutCharacter::LoadInventory);
 }
 
 void ABlackoutCharacter::Tick(float DeltaSeconds)
@@ -267,11 +267,12 @@ void ABlackoutCharacter::SaveInventory()
 		if (const FSlot* Slot = InventoryComponent->GetSlot(i))
 		{			
 			BlackoutGameInstance->SaveInventorySlotData(
-			i,
-			InventoryItemInfo->GetInventoryItemByClass(Slot->SlotItemClass)->ItemName,
-			Slot->SlotData.IntegerValues,
-			Slot->SlotData.FloatValues,
-			Slot->SlotData.BoolValues);
+				Slot->PersistentGuid,
+				i,
+				InventoryItemInfo->GetInventoryItemByClass(Slot->SlotItemClass)->ItemName,
+				Slot->SlotData.IntegerValues,
+				Slot->SlotData.FloatValues,
+				Slot->SlotData.BoolValues);
 		}
 	}
 }
@@ -368,14 +369,15 @@ void ABlackoutCharacter::LoadInventory() const
 	
 	for (int i=0; i<InventoryComponent->InventorySize+2; i++)
 	{
+		FGuid PersistentGuid;
 		FString ItemName;
 		TMap<FString, int32> IntegerMap;
 		TMap<FString, float> FloatMap;
 		TMap<FString, bool> BoolMap;
 		
-		if (BlackoutGameInstance->LoadInventorySlotData(i, ItemName, IntegerMap, FloatMap, BoolMap))
+		if (BlackoutGameInstance->LoadInventorySlotData(i, PersistentGuid, ItemName, IntegerMap, FloatMap, BoolMap))
 		{
-			InventoryComponent->RestoreItem(i, ItemName, IntegerMap, FloatMap, BoolMap);
+			InventoryComponent->RestoreItem(PersistentGuid, i, ItemName, IntegerMap, FloatMap, BoolMap);
 		}
 	}
 	LoadHandItems();

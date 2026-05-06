@@ -103,6 +103,15 @@ public:
 	 * Handy function to return PersistentGuid property value
 	 * @return The unique identifier related to the implementing object
 	 */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Inventory")
-	FGuid GetGuid();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	FGuid GetPersistentGuid();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	void SetPersistentGuid(const FGuid& Guid);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	bool IsInOriginalState() const;
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	void SetIsIsOriginalState(const bool bInIsInOriginalState);
 };

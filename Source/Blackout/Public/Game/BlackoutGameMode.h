@@ -6,6 +6,7 @@
 
 class UInventoryItemInfo;
 class UPaperNoteInfo;
+struct FLevelData;
 
 /**
  * Out custom GameMode. Currently, it only stored the instance of the PaperNoteInfo data asset used to retrieve text
@@ -22,7 +23,11 @@ public:
 	 * @param MapName The level which the player wll travel to
 	 */
 	UFUNCTION(BlueprintCallable)
-	void TravelToMap(const FString& MapName);
+	void TravelToMap(const FString& MapName);	
+
+	virtual void StartPlay() override;
+	
+	void MarkActorAsPendingKill(const FString& MapName, const FGuid& PersistentGuid) const;
 	
 	/**
 	 * The PaperNoteInfo data asset reference. Each paper note actor in the game is identified by a number. That number
@@ -48,4 +53,10 @@ public:
 protected:
 	// Actor override
 	virtual void BeginPlay() override;
+	
+private:	
+	void SavePlacedActors() const;
+	void SaveSpawnedActors() const;
+	void LoadPlacedActors(FLevelData& LevelData) const;
+	void LoadSpawnedActors(FLevelData& LevelData) const;
 };

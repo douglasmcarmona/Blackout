@@ -47,7 +47,21 @@ public:
 	virtual UTexture2D* GetIcon_Implementation() override;
 	
 	// InteractionInterface override
-	virtual FGuid GetGuid_Implementation() override;
+	virtual FGuid GetPersistentGuid_Implementation() override;
+	
+	virtual void SetPersistentGuid_Implementation(const FGuid& Guid) override;
+	
+	virtual bool IsInOriginalState_Implementation() const override;
+	
+	virtual void SetIsIsOriginalState_Implementation(const bool bInIsInOriginalState) override;
+
+	// Object override
+	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+	
+	// Actor override
+	virtual void PostLoad() override;
+	
+	virtual void Destroyed() override;
 	
 	/**
 	 * When called, performs the required settings to become interactable again in the world, mainly after being thrown away
@@ -57,9 +71,6 @@ public:
 	void HandleDrop();
 	
 protected:
-	// Actor override
-	virtual void BeginPlay() override;
-	
 	/**
 	 * Hints the player that they can interact with the actor, in case they're within the interaction range
 	 */
@@ -78,37 +89,43 @@ protected:
 	/**
 	 * Visual representation of the InteractableActor in the world. It's set to be the RootComponent
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", Transient)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
 	/**
 	 * Indicates if the InteractableActor can be picked up by the player
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bIsPickable = true;
 
 	/**
 	 * Indicates if the InteractableActor can be stored in player's inventory
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category="Interaction")
 	bool bIsStorable = false;
 
 	/**
 	 * Indicates if the InteractableActor can be thrown away after being picked up/withdrawn
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bIsThrowable = false;
 
 	/**
 	 * Visual representation of the InteractableActor while inside the player's inventory
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient)
 	TObjectPtr<UTexture2D> InventoryIcon;
 
 	/**
 	 * A unique identifier used to track the actor's state, regarding world transform and inventory storage  
 	 */
-	UPROPERTY(VisibleAnywhere, Category="InteractableActor")
+	UPROPERTY(VisibleAnywhere, Category="InteractableActor", SaveGame)
 	FGuid PersistentGuid;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame, Category="InteractableActor")
+	bool bIsInOriginalState = true;
+	
+private:
+	void GenerateNewPersistentGuid();
 };
 

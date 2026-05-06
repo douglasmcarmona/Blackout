@@ -33,6 +33,9 @@ struct FInventorySlotData
 {
 	GENERATED_BODY()
 	
+	UPROPERTY()
+	FGuid PersistentGuid;
+	
 	// The name of the item. Used to get uobject data from InventoryItemInfo data asset
 	UPROPERTY()
 	FString ItemName = FString();
@@ -46,6 +49,59 @@ struct FInventorySlotData
 	FInventorySlotMapData InventorySlotMapData;
 };
 
+USTRUCT()
+struct FPlacedActorData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	FTransform ActorTransform;
+	
+	UPROPERTY()
+	TArray<uint8> Bytes;
+	
+	UPROPERTY()
+	bool bIsPendingKill = false;
+};
+
+USTRUCT()
+struct FSpawnedActorData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	FGuid ActorGuid;
+	
+	UPROPERTY()
+	TSubclassOf<AActor> ActorClass;
+	
+	UPROPERTY()
+	FTransform ActorTransform;
+	
+	UPROPERTY()
+	TArray<uint8> Bytes;
+	
+	bool operator==(const FSpawnedActorData& OtherActorData) const
+	{
+		return ActorGuid == OtherActorData.ActorGuid;
+	}
+};
+
+USTRUCT()
+struct FLevelData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	TMap<FGuid, FPlacedActorData> PlacedActorsData = TMap<FGuid, FPlacedActorData>();
+	
+	UPROPERTY()
+	TArray<FSpawnedActorData> SpawnedActorsData = TArray<FSpawnedActorData>();
+	
+	UPROPERTY()
+	bool bIsFirstLoad = true;
+};
+
 /**
  * Out custom GameInstance object. Used to persist data while switching levels, such as the player's inventory and changings
  * in the level regarding dynamic actors (such as interactable actors).
@@ -57,7 +113,7 @@ class BLACKOUT_API UBlackoutGameInstance : public UGameInstance
 	
 public:
 	/**
-	 * Keeps track of a inventory item internally. Used later to restore the item into the inventory after switching levels
+	 * Keeps track of an inventory item internally. Used later to restore the item into the inventory after switching levels
 	 * @param SlotNumber The position (slot) of the item in the inventory
 	 * @param ItemName The name of the item. Enables restoration of object data with the assist of the InventoryItem info
 	 * Data asset, such as the class and inventory icon of the item
@@ -65,7 +121,7 @@ public:
 	 * @param FloatMap Set of arbitrary float values, identified by a string key
 	 * @param BoolMap Set of arbitrary boolean values, identified by a string key
 	 */
-	void SaveInventorySlotData(const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap);
+	void SaveInventorySlotData(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap);
 
 	/**
 	 * Used to retrieve a previously saved inventory item data, which is then used to restore the slot in the inventory 
@@ -77,36 +133,18 @@ public:
 	 * @param BoolMap(output) Set of arbitrary boolean values, identified by a string key
 	 * @return True if the item was retrieved successfully. False otherwise
 	 */
-	bool LoadInventorySlotData(const int32 SlotNumber, FString& ItemName, TMap<FString, int32>& IntegerMap, TMap<FString, float>& FloatMap, TMap<FString, bool>& BoolMap);
+	bool LoadInventorySlotData(const int32 SlotNumber, FGuid& PersistentGuid, FString& ItemName, TMap<FString, int32>& IntegerMap, TMap<FString, float>& FloatMap, TMap<FString, bool>& BoolMap);
 
 	/**
 	 * Empties the inventory
 	 */
 	void InventoryEmpty() { InventoryData.Empty(); }
-
-	/**
-	 * Keep track of an interactable actor that was turned into an inventory item. In that case, the actor must not be
-	 * spawned again when its original level loads a second time
-	 * @param MapName The name of the level where the actor was picked up from and stored 
-	 * @param Guid The actor's identifier
-	 */
-	void AddToLevelStoredItems(const FString& MapName, const FGuid& Guid);
-
-	/**
-	 * Stops tracking of an item that was withdrawn from the inventory. Otherwise, the related actor cannot be spawned in
-	 * the level
-	 * @param MapName The name of the level where the actor was picked up from and previously stored 
-	 * @param Guid The actor's identifier
-	 */
-	void RemoveFromLevelStoredItems(const FString& MapName, const FGuid& Guid);
-
-	/**
-	 * Checks if a particular interactable item is already being tracked for level consistency
-	 * @param MapName The name of the map to be checked for
-	 * @param Guid The identifier of the actor being evaluated
-	 * @return True if the actor is already being tracked. False otherwise
-	 */
-	bool DoesMapHaveGuid(const FString& MapName, const FGuid& Guid) const;
+	
+	// bool AddToPlacedActors(const FString& MapName, const FGuid& ActorGuid, const FInteractableActorData& PlacedActor);
+	bool AddToPlacedActors(const FString& MapName, const FGuid& ActorGuid, const FPlacedActorData& PlacedActor);
+	
+	bool AddToSpawnedActors(const FString& MapName, const FSpawnedActorData& SpawnedActor);
+	
 	
 	// Saves the number of the slot where the item in player's right hand now is
 	int32 RightHandItemInventorySlotNumber;
@@ -116,6 +154,8 @@ public:
 	
 	// Keeps a list of interactable actors in each level that were stored in the inventory before a level switch
 	TMap<FString, TSet<FGuid>> LevelStoredItems;
+	
+	TMap<FString, FLevelData> LevelTransitionData;
 	
 private:
 	// The inventory's data-only representation

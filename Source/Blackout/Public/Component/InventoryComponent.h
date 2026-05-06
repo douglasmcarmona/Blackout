@@ -41,6 +41,9 @@ struct FSlot
 {
 	GENERATED_BODY()
 
+	UPROPERTY(BlueprintReadOnly)
+	FGuid PersistentGuid;
+	
 	/**
 	 * The inventory index, used to retrieve this slot later
 	 */
@@ -57,7 +60,7 @@ struct FSlot
 	 * Visual representation of the item while in the inventory
 	 */
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UTexture2D> SlotIcon = nullptr;
+	TObjectPtr<UTexture2D> SlotIcon = nullptr;	
 
 	/**
 	 * Data structure containing arbitrary data
@@ -124,7 +127,7 @@ public:
 	 * @param FloatMap Arbitrary float data
 	 * @param BoolMap Arbitrary boolean data
 	 */
-	void RestoreItem(const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap);
+	void RestoreItem(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap);
 	/**
 	 * Checks if the given slot is not already taken by an item. A storage attempt on a taken slot results in failure
 	 * @param SlotNumber The slot to be checked for availability

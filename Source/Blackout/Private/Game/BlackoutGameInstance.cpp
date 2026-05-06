@@ -1,9 +1,10 @@
 ﻿#include "Game/BlackoutGameInstance.h"
 
-void UBlackoutGameInstance::SaveInventorySlotData(const int32 SlotNumber, const FString& ItemName,
+void UBlackoutGameInstance::SaveInventorySlotData(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName,
 	const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap)
 {
 	FInventorySlotData InventorySlotData;
+	InventorySlotData.PersistentGuid = PersistentGuid;
 	InventorySlotData.ItemName = ItemName;
 	InventorySlotData.SlotNumber = SlotNumber;
 	
@@ -16,7 +17,7 @@ void UBlackoutGameInstance::SaveInventorySlotData(const int32 SlotNumber, const 
 	InventoryData.Add(InventorySlotData);
 }
 
-bool UBlackoutGameInstance::LoadInventorySlotData(const int32 SlotNumber, FString& ItemName, TMap<FString, int32>& IntegerMap,
+bool UBlackoutGameInstance::LoadInventorySlotData(const int32 SlotNumber, FGuid& PersistentGuid,  FString& ItemName, TMap<FString, int32>& IntegerMap,
 	TMap<FString, float>& FloatMap, TMap<FString, bool>& BoolMap)
 {
 	const FInventorySlotData* InventorySlotData = InventoryData.FindByPredicate([SlotNumber](const FInventorySlotData& InInventorySlotData)
@@ -26,6 +27,7 @@ bool UBlackoutGameInstance::LoadInventorySlotData(const int32 SlotNumber, FStrin
 	
 	if (InventorySlotData)
 	{
+		PersistentGuid = InventorySlotData->PersistentGuid;
 		ItemName = InventorySlotData->ItemName;
 		IntegerMap.Append(InventorySlotData->InventorySlotMapData.IntegerMap);
 		FloatMap.Append(InventorySlotData->InventorySlotMapData.FloatMap);
@@ -35,27 +37,21 @@ bool UBlackoutGameInstance::LoadInventorySlotData(const int32 SlotNumber, FStrin
 	return false;
 }
 
-void UBlackoutGameInstance::AddToLevelStoredItems(const FString& MapName, const FGuid& Guid)
+bool UBlackoutGameInstance::AddToPlacedActors(const FString& MapName, const FGuid& ActorGuid, const FPlacedActorData& PlacedActor)
 {
-	if (TSet<FGuid>* MapActorGuids = LevelStoredItems.Find(MapName))
-	{
-		MapActorGuids->Add(Guid);
-	}
+	FLevelData* LevelData = LevelTransitionData.Find(MapName);
+	if (!LevelData) return false;
+	
+	LevelData->PlacedActorsData.Add(ActorGuid, PlacedActor);
+	return true;
 }
 
-void UBlackoutGameInstance::RemoveFromLevelStoredItems(const FString& MapName, const FGuid& Guid)
+bool UBlackoutGameInstance::AddToSpawnedActors(const FString& MapName,
+	const FSpawnedActorData& SpawnedActor)
 {
-	if (TSet<FGuid>* MapActorGuids = LevelStoredItems.Find(MapName))
-	{
-		MapActorGuids->Remove(Guid);
-	}
-}
+	FLevelData* LevelData = LevelTransitionData.Find(MapName);
+	if (!LevelData) return false;
 
-bool UBlackoutGameInstance::DoesMapHaveGuid(const FString& MapName, const FGuid& Guid) const
-{
-	if (const TSet<FGuid>* MapActorGuids = LevelStoredItems.Find(MapName))
-	{
-		return MapActorGuids->Contains(Guid);
-	}
-	return false;
+	LevelData->SpawnedActorsData.AddUnique(SpawnedActor);
+	return true;
 }

@@ -41,6 +41,9 @@ struct FSlot
 {
 	GENERATED_BODY()
 
+	/**
+	 * Unique identifier of the original actor represented by this item
+	 */
 	UPROPERTY(BlueprintReadOnly)
 	FGuid PersistentGuid;
 	
@@ -63,7 +66,7 @@ struct FSlot
 	TObjectPtr<UTexture2D> SlotIcon = nullptr;	
 
 	/**
-	 * Data structure containing arbitrary data
+	 * Data structure containing arbitrary data about the item
 	 */
 	UPROPERTY(BlueprintReadWrite)
 	FSlotData SlotData;
@@ -121,6 +124,7 @@ public:
 
 	/**
 	 * Stores an item back in the inventory while loading itself after a level switch
+	 * @param PersistentGuid The original PersistentGuid of the actor that was turned into an inventory item
 	 * @param SlotNumber The inventory slot the restored item should take
 	 * @param ItemName Used to get the item's icon and class
 	 * @param IntegerMap Arbitrary integer data 
@@ -129,7 +133,7 @@ public:
 	 */
 	void RestoreItem(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName, const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap);
 	/**
-	 * Checks if the given slot is not already taken by an item. A storage attempt on a taken slot results in failure
+	 * Checks if the given slot is not already taken by an item. A storage attempt into a taken slot results in failure
 	 * @param SlotNumber The slot to be checked for availability
 	 * @param bIsFlashlight True if the checked slot is actually the flashlight slot. False otherwise
 	 * @return True if the slot is not taken. False otherwise

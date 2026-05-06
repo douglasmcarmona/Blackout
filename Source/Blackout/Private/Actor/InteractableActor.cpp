@@ -72,7 +72,10 @@ FGuid AInteractableActor::GetPersistentGuid_Implementation()
 
 void AInteractableActor::SetPersistentGuid_Implementation(const FGuid& Guid)
 {
-	PersistentGuid = Guid;
+	if (!PersistentGuid.IsValid())
+	{
+		PersistentGuid = Guid;		
+	}
 }
 
 bool AInteractableActor::IsInOriginalState_Implementation() const

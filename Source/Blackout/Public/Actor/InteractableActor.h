@@ -49,10 +49,13 @@ public:
 	// InteractionInterface override
 	virtual FGuid GetPersistentGuid_Implementation() override;
 	
+	// InteractionInterface override
 	virtual void SetPersistentGuid_Implementation(const FGuid& Guid) override;
 	
+	// InteractionInterface override
 	virtual bool IsInOriginalState_Implementation() const override;
 	
+	// InteractionInterface override
 	virtual void SetIsIsOriginalState_Implementation(const bool bInIsInOriginalState) override;
 
 	// Object override
@@ -61,6 +64,7 @@ public:
 	// Actor override
 	virtual void PostLoad() override;
 	
+	// Actor override
 	virtual void Destroyed() override;
 	
 	/**
@@ -117,15 +121,23 @@ protected:
 	TObjectPtr<UTexture2D> InventoryIcon;
 
 	/**
-	 * A unique identifier used to track the actor's state, regarding world transform and inventory storage  
+	 * A unique identifier used to track the actor's state. The guid is created once while in the editor (when the actor
+	 * is placed in the level) and persists (hence the name) through inventory handling (store/withdraw) and level transitions.
 	 */
 	UPROPERTY(VisibleAnywhere, Category="InteractableActor", SaveGame)
 	FGuid PersistentGuid;
-	
+
+	/**
+	 * Tracks down whether an interactable actor is now at a different stage than that of the game start, such as to be
+	 * stored in the inventory and withdrawn later on
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame, Category="InteractableActor")
 	bool bIsInOriginalState = true;
 	
 private:
+	/**
+	 * Handy function to generate the actor's PersistentGuid value
+	 */
 	void GenerateNewPersistentGuid();
 };
 

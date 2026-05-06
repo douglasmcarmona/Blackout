@@ -1,7 +1,6 @@
 #include "Component/InventoryComponent.h"
 
 #include "Data/InventoryItemInfo.h"
-#include "Game/BlackoutGameInstance.h"
 #include "Interaction/FlashlightInterface.h"
 #include "Interaction/HandInterface.h"
 #include "Interaction/InteractionInterface.h"

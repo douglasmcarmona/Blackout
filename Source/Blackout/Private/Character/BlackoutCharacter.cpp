@@ -178,8 +178,11 @@ void ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
 					false);
 		
 		IInteractionInterface::Execute_PreparePickup(Item);
-		Item->AttachToComponent(RightHand, AttachmentTransformRules);	
-		RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+		Item->AttachToComponent(RightHand, AttachmentTransformRules);
+		if (!RightHandItem->OnDestroyed.IsAlreadyBound(this, &ABlackoutCharacter::OnItemDestroyed))
+		{
+			RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);			
+		}
 	}
 }
 
@@ -196,7 +199,10 @@ void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
 	
 		IInteractionInterface::Execute_PreparePickup(Item);
 		Item->AttachToComponent(LeftHand, AttachmentTransformRules);
-		LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+		if (!LeftHandItem->OnDestroyed.IsAlreadyBound(this, &ABlackoutCharacter::OnItemDestroyed))
+		{
+			LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);			
+		}
 	}	
 }
 

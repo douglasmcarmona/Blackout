@@ -3,11 +3,16 @@
 
 #include "Actor/InteractableActor.h"
 
+#include "Data/InventoryItemInfo.h"
+#include "Game/BlackoutGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Util/BlackoutFunctionLibrary.h"
+
 // Sets default values
 AInteractableActor::AInteractableActor()
 { 	
 	PrimaryActorTick.bCanEverTick = false;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");	
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	SetRootComponent(Mesh);
 	Mesh->CustomDepthStencilValue = CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE;
 	HandleDrop();
@@ -58,8 +63,63 @@ void AInteractableActor::PreparePickup_Implementation()
 }
 
 UTexture2D* AInteractableActor::GetIcon_Implementation()
+{	
+	return UBlackoutFunctionLibrary::GetInventoryItemInfo(this)->GetInventoryItemByClass(GetClass())->ItemIcon;
+}
+
+FGuid AInteractableActor::GetPersistentGuid_Implementation()
 {
-	return InventoryIcon;
+	return PersistentGuid;
+}
+
+void AInteractableActor::SetPersistentGuid_Implementation(const FGuid& Guid)
+{
+	if (!PersistentGuid.IsValid())
+	{
+		PersistentGuid = Guid;		
+	}
+}
+
+bool AInteractableActor::IsInOriginalState_Implementation() const
+{
+	return bIsInOriginalState;
+}
+
+void AInteractableActor::SetIsIsOriginalState_Implementation(const bool bInIsInOriginalState)
+{
+	bIsInOriginalState = bInIsInOriginalState;
+}
+
+#if WITH_EDITOR
+void AInteractableActor::GenerateNewPersistentGuid()
+{
+	const FString& ObjectPath = GetActorGuid().ToString();
+	PersistentGuid = FGuid::NewDeterministicGuid(ObjectPath);
+}
+
+void AInteractableActor::PostDuplicate(bool bDuplicateForPIE)
+{
+	Super::PostDuplicate(bDuplicateForPIE);
+	GenerateNewPersistentGuid();
+}
+
+void AInteractableActor::PostLoad()
+{
+	Super::PostLoad();
+	GenerateNewPersistentGuid();
+	bIsInOriginalState = true;
+}
+#endif
+
+void AInteractableActor::Destroyed()
+{
+	Super::Destroyed();
+	ABlackoutGameMode* BlackoutGameMode = Cast<ABlackoutGameMode>(UGameplayStatics::GetGameMode(this));
+	if (BlackoutGameMode)
+	{
+		BlackoutGameMode->MarkActorAsPendingKill(GetWorld()->GetMapName(), PersistentGuid);
+		bIsInOriginalState = false;
+	}
 }
 
 void AInteractableActor::HandleDrop()

@@ -26,7 +26,7 @@ public:
 	/**
 	 * Make the required settings to become highlighted in the world
 	 * 
-	 * The highlight mechanic works as a outline rendered on top of the object's mesh on demand 
+	 * The highlight mechanic works as an outline rendered on top of the object's mesh on demand 
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Hightlight")
 	void Highlight();
@@ -97,5 +97,37 @@ public:
 	 * @param SlotData The data structure to be retrieved from the slot
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|Inventory", meta = (ForceAsFunction))
-	void HandleWithdrawnItemSlotData(const FSlotData& SlotData);	
+	void HandleWithdrawnItemSlotData(const FSlotData& SlotData);
+
+	/**
+	 * Handy function to return PersistentGuid property value
+	 * @return The unique identifier related to the implementing object
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	FGuid GetPersistentGuid();
+
+	/**
+	 * Sets the PersistentGuid property. Only works if it's actually invalid, which should only happen when the actor is
+	 * spawned (e.g. withdrawn from the inventory), since the original value is generated in PostLoad 
+	 * @param Guid The value the PersistentGuid property should be set to
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	void SetPersistentGuid(const FGuid& Guid);
+
+	/**
+	 * Checks whether an InteractableActor has its state changed during gameplay.
+	 * 
+	 * Consider "original state" as the state the actor is in if it has not been destroyed at least once since the game
+	 * started. 
+	 * @return True if the actor is still in its original state. False otherwise
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	bool IsInOriginalState() const;
+
+	/**
+	 * Changes the original state flag of the actor
+	 * @param bInIsInOriginalState The value the original state flag should be set toSSS
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction|LevelTransition")
+	void SetIsIsOriginalState(const bool bInIsInOriginalState);
 };

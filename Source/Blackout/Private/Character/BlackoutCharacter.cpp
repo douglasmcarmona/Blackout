@@ -4,10 +4,13 @@
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "Component/InventoryComponent.h"
+#include "Data/InventoryItemInfo.h"
+#include "Game/BlackoutGameInstance.h"
 #include "Interaction/InteractionInterface.h"
 #include "Interaction/UsageInterface.h"
 #include "Player/BlackoutPlayerController.h"
 #include "UI/HUD/BlackoutHUD.h"
+#include "Util/BlackoutFunctionLibrary.h"
 
 ABlackoutCharacter::ABlackoutCharacter()
 { 	
@@ -39,17 +42,8 @@ void ABlackoutCharacter::BeginPlay()
 	checkf(EnableThrowAction, TEXT("Please fill in EnableThrowAction"));
 	checkf(ToggleInventoryAction, TEXT("Please fill in ToggleInventoryAction"));
 
-	InventoryComponent->OnItemStored.AddLambda([this](const FSlot& InSlot, const bool bIsRightHand)
-	{	
-		if (bIsRightHand)
-		{
-			RightHandItem->Destroy();
-		}
-		else
-		{
-			LeftHandItem->Destroy();
-		}
-	});
+	InventoryComponent->OnItemStored.AddUObject(this, &ABlackoutCharacter::ItemStored);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ABlackoutCharacter::LoadInventory);
 }
 
 void ABlackoutCharacter::Tick(float DeltaSeconds)
@@ -184,8 +178,11 @@ void ABlackoutCharacter::SetRightHandItem_Implementation(AActor* Item)
 					false);
 		
 		IInteractionInterface::Execute_PreparePickup(Item);
-		Item->AttachToComponent(RightHand, AttachmentTransformRules);	
-		RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+		Item->AttachToComponent(RightHand, AttachmentTransformRules);
+		if (!RightHandItem->OnDestroyed.IsAlreadyBound(this, &ABlackoutCharacter::OnItemDestroyed))
+		{
+			RightHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);			
+		}
 	}
 }
 
@@ -202,7 +199,10 @@ void ABlackoutCharacter::SetLeftHandItem_Implementation(AActor* Item)
 	
 		IInteractionInterface::Execute_PreparePickup(Item);
 		Item->AttachToComponent(LeftHand, AttachmentTransformRules);
-		LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);
+		if (!LeftHandItem->OnDestroyed.IsAlreadyBound(this, &ABlackoutCharacter::OnItemDestroyed))
+		{
+			LeftHandItem->OnDestroyed.AddDynamic(this, &ABlackoutCharacter::OnItemDestroyed);			
+		}
 	}	
 }
 
@@ -260,6 +260,59 @@ AActor* ABlackoutCharacter::DropRightHandItem_Implementation()
 	return DetachedActor;
 }
 
+void ABlackoutCharacter::SaveInventory()
+{	
+	SaveHandItems();
+	UInventoryItemInfo* InventoryItemInfo = UBlackoutFunctionLibrary::GetInventoryItemInfo(this);
+	if (!InventoryItemInfo) return;
+	
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	
+	for (int32 i=0; i<InventoryComponent->InventorySize+2; i++)
+	{
+		if (const FSlot* Slot = InventoryComponent->GetSlot(i))
+		{			
+			BlackoutGameInstance->SaveInventorySlotData(
+				Slot->PersistentGuid,
+				i,
+				InventoryItemInfo->GetInventoryItemByClass(Slot->SlotItemClass)->ItemName,
+				Slot->SlotData.IntegerValues,
+				Slot->SlotData.FloatValues,
+				Slot->SlotData.BoolValues);
+		}
+	}
+}
+
+void ABlackoutCharacter::SaveHandItems()
+{	
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	InventoryComponent->OnItemStored.Clear();	
+	
+	int32 RightHandItemSlot = InventoryComponent->InventorySize;
+	int32 LeftHandItemSlot = InventoryComponent->InventorySize + 1;	
+	
+	InventoryComponent->OnItemStored.AddLambda([&RightHandItemSlot, &LeftHandItemSlot](const FSlot& Slot, const bool bIsRightHand)
+	{
+		if (bIsRightHand)
+		{
+			RightHandItemSlot = Slot.SlotNumber == 0 ? 0 : RightHandItemSlot;
+		}
+		else
+		{
+			LeftHandItemSlot = Slot.SlotNumber == 0 ? 0 : LeftHandItemSlot;
+		}
+	});
+	
+	InventoryComponent->StoreItem(InventoryComponent->InventorySize, true);	
+	InventoryComponent->StoreItem(InventoryComponent->InventorySize + 1, false);
+	
+	InventoryComponent->OnItemStored.RemoveAll(this);
+	InventoryComponent->OnItemStored.AddUObject(this, &ABlackoutCharacter::ItemStored); 
+	
+	BlackoutGameInstance->RightHandItemInventorySlotNumber = RightHandItemSlot;
+	BlackoutGameInstance->LeftHandItemInventorySlotNumber = LeftHandItemSlot;
+}
+
 void ABlackoutCharacter::UseItem(const FInputActionValue& InputActionValue)
 {
 	if (bIsThrowEnabled || bIsInventoryOpen) return;
@@ -313,4 +366,49 @@ void ABlackoutCharacter::OnItemDestroyed(AActor* DestroyedItem)
 {
 	if (DestroyedItem == RightHandItem) RightHandItem = nullptr;
 	else if (DestroyedItem == LeftHandItem) LeftHandItem = nullptr;
+}
+
+void ABlackoutCharacter::LoadInventory() const
+{
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();
+	if (!BlackoutGameInstance) return;
+	
+	for (int i=0; i<InventoryComponent->InventorySize+2; i++)
+	{
+		FGuid PersistentGuid;
+		FString ItemName;
+		TMap<FString, int32> IntegerMap;
+		TMap<FString, float> FloatMap;
+		TMap<FString, bool> BoolMap;
+		
+		if (BlackoutGameInstance->LoadInventorySlotData(i, PersistentGuid, ItemName, IntegerMap, FloatMap, BoolMap))
+		{
+			InventoryComponent->RestoreItem(PersistentGuid, i, ItemName, IntegerMap, FloatMap, BoolMap);
+		}
+	}
+	LoadHandItems();
+	BlackoutGameInstance->InventoryEmpty();
+}
+
+void ABlackoutCharacter::LoadHandItems() const
+{
+	UBlackoutGameInstance* BlackoutGameInstance = GetGameInstance<UBlackoutGameInstance>();	
+	
+	InventoryComponent->WithdrawItem(BlackoutGameInstance->RightHandItemInventorySlotNumber, true);
+	InventoryComponent->WithdrawItem(BlackoutGameInstance->LeftHandItemInventorySlotNumber, false);
+	
+	BlackoutGameInstance->RightHandItemInventorySlotNumber = -1;
+	BlackoutGameInstance->LeftHandItemInventorySlotNumber = -1;
+}
+
+void ABlackoutCharacter::ItemStored(const FSlot& StoredItem, const bool bIsRightHand) const
+{
+	if (bIsRightHand)
+	{
+		RightHandItem->Destroy();
+	}
+	else
+	{
+		LeftHandItem->Destroy();
+	}
 }

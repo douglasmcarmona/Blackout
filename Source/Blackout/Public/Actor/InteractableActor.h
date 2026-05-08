@@ -18,6 +18,7 @@ class BLACKOUT_API AInteractableActor : public AActor, public IInteractionInterf
 	
 public:
 	AInteractableActor();
+	
 	// InteractionInterface override
 	virtual void Highlight_Implementation() override;
 	
@@ -44,7 +45,28 @@ public:
 	
 	// InteractionInterface override
 	virtual UTexture2D* GetIcon_Implementation() override;
+	
+	// InteractionInterface override
+	virtual FGuid GetPersistentGuid_Implementation() override;
+	
+	// InteractionInterface override
+	virtual void SetPersistentGuid_Implementation(const FGuid& Guid) override;
+	
+	// InteractionInterface override
+	virtual bool IsInOriginalState_Implementation() const override;
+	
+	// InteractionInterface override
+	virtual void SetIsIsOriginalState_Implementation(const bool bInIsInOriginalState) override;
 
+	// Object override
+	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+	
+	// Actor override
+	virtual void PostLoad() override;
+	
+	// Actor override
+	virtual void Destroyed() override;
+	
 	/**
 	 * When called, performs the required settings to become interactable again in the world, mainly after being thrown away
 	 * by the player
@@ -71,31 +93,45 @@ protected:
 	/**
 	 * Visual representation of the InteractableActor in the world. It's set to be the RootComponent
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", Transient)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
 	/**
 	 * Indicates if the InteractableActor can be picked up by the player
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bIsPickable = true;
 
 	/**
 	 * Indicates if the InteractableActor can be stored in player's inventory
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category="Interaction")
 	bool bIsStorable = false;
 
 	/**
 	 * Indicates if the InteractableActor can be thrown away after being picked up/withdrawn
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bIsThrowable = false;
 
 	/**
-	 * Visual representation of the InteractableActor while inside the player's inventory
+	 * A unique identifier used to track the actor's state. The guid is created once while in the editor (when the actor
+	 * is placed in the level) and persists (hence the name) through inventory handling (store/withdraw) and level transitions.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UTexture2D> InventoryIcon;
+	UPROPERTY(VisibleAnywhere, Category="InteractableActor", SaveGame)
+	FGuid PersistentGuid;
+
+	/**
+	 * Tracks down whether an interactable actor is now at a different stage than that of the game start, such as to be
+	 * stored in the inventory and withdrawn later on
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame, Category="InteractableActor")
+	bool bIsInOriginalState = true;
+	
+private:
+	/**
+	 * Handy function to generate the actor's PersistentGuid value
+	 */
+	void GenerateNewPersistentGuid();
 };
 

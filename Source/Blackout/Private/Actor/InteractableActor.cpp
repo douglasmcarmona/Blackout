@@ -3,8 +3,10 @@
 
 #include "Actor/InteractableActor.h"
 
+#include "Data/InventoryItemInfo.h"
 #include "Game/BlackoutGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "Util/BlackoutFunctionLibrary.h"
 
 // Sets default values
 AInteractableActor::AInteractableActor()
@@ -61,8 +63,8 @@ void AInteractableActor::PreparePickup_Implementation()
 }
 
 UTexture2D* AInteractableActor::GetIcon_Implementation()
-{
-	return InventoryIcon;
+{	
+	return UBlackoutFunctionLibrary::GetInventoryItemInfo(this)->GetInventoryItemByClass(GetClass())->ItemIcon;
 }
 
 FGuid AInteractableActor::GetPersistentGuid_Implementation()

@@ -115,12 +115,6 @@ protected:
 	bool bIsThrowable = false;
 
 	/**
-	 * Visual representation of the InteractableActor while inside the player's inventory
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient)
-	TObjectPtr<UTexture2D> InventoryIcon;
-
-	/**
 	 * A unique identifier used to track the actor's state. The guid is created once while in the editor (when the actor
 	 * is placed in the level) and persists (hence the name) through inventory handling (store/withdraw) and level transitions.
 	 */

@@ -14,19 +14,19 @@ AInteractableActor::AInteractableActor()
 	PrimaryActorTick.bCanEverTick = false;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	SetRootComponent(Mesh);
-	Mesh->CustomDepthStencilValue = CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE;
+	SetHighlightTarget(Mesh);
 	HandleDrop();
 }
 
 void AInteractableActor::Highlight_Implementation()
-{
-	Mesh->SetRenderCustomDepth(true);
+{	
+	HighlightTarget->SetRenderCustomDepth(true);
 	ShowInteractWidget();
 }
 
 void AInteractableActor::Unhighlight_Implementation()
 {
-	Mesh->SetRenderCustomDepth(false);
+	HighlightTarget->SetRenderCustomDepth(false);
 	HideInteractWidget();
 }
 
@@ -126,4 +126,10 @@ void AInteractableActor::HandleDrop()
 {
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void AInteractableActor::SetHighlightTarget(UPrimitiveComponent* NewHighlightTarget)
+{
+	HighlightTarget = NewHighlightTarget;
+	HighlightTarget->CustomDepthStencilValue = CUSTOM_DEPTH_HIGHLIGHT_STENCIL_VALUE;
 }

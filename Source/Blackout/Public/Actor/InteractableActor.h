@@ -90,6 +90,9 @@ protected:
 	virtual void ShowInteractWidget_Implementation() {}
 	virtual void HideInteractWidget_Implementation() {}
 
+	UFUNCTION(BlueprintCallable)
+	void SetHighlightTarget(UPrimitiveComponent* NewHighlightTarget);
+	
 	/**
 	 * Visual representation of the InteractableActor in the world. It's set to be the RootComponent
 	 */
@@ -127,6 +130,9 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame, Category="InteractableActor")
 	bool bIsInOriginalState = true;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="InteractableActor")
+	TObjectPtr<UPrimitiveComponent> HighlightTarget;
 	
 private:
 	/**

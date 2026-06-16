@@ -31,4 +31,7 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category="Blackout|Data", meta = (DefaultToSelf = "WorldContextObject"))
 	static UInventoryItemInfo* GetInventoryItemInfo(const UObject* WorldContextObject);
+	
+	UFUNCTION(BlueprintCallable, Category="Blackout|Pause", meta = (DefaultToSelf = "WorldContextObject"))
+	static void TogglePauseButton(const UObject* WorldContextObject, const bool bVisible);
 };

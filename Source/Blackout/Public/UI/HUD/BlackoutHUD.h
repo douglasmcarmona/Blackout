@@ -35,6 +35,9 @@ public:
 	 * Removes the inventory widget from the player's screen
 	 */
 	void CloseInventoryWidget() const;
+	
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void TogglePauseButtonWidget(const bool bVisible);
 
 protected:
 	/**

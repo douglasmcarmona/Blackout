@@ -9,6 +9,9 @@
 class UPaperNoteInfo;
 class UInventoryItemInfo;
 
+/**
+ * A lighter version of our custom GameMode, with level transition mechanic stripped off 
+ */
 UCLASS()
 class BLACKOUT_API ABlackoutGameModeBase : public AGameModeBase
 {

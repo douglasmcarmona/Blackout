@@ -90,6 +90,11 @@ protected:
 	virtual void ShowInteractWidget_Implementation() {}
 	virtual void HideInteractWidget_Implementation() {}
 
+	/**
+	 * Defines what component of this actor will actually highlight. Useful for actors composed by more than 1 static mesh
+	 * component
+	 * @param NewHighlightTarget The component which highlights to indicate a possible interaction 
+	 */
 	UFUNCTION(BlueprintCallable)
 	void SetHighlightTarget(UPrimitiveComponent* NewHighlightTarget);
 	
@@ -130,7 +135,10 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, SaveGame, Category="InteractableActor")
 	bool bIsInOriginalState = true;
-	
+
+	/**
+	 * Identifies what part of the actor's visual representation highlighs to indicate a possible interaction
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="InteractableActor")
 	TObjectPtr<UPrimitiveComponent> HighlightTarget;
 	

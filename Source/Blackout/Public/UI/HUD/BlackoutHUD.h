@@ -35,7 +35,12 @@ public:
 	 * Removes the inventory widget from the player's screen
 	 */
 	void CloseInventoryWidget() const;
-	
+
+	/**
+	 * Controls visibility of the pause button widget. Should be visible while traveling through the map and invisible
+	 * when the pause input action is triggered
+	 * @param bVisible True if the widget must be visible. False otherwise
+	 */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void TogglePauseButtonWidget(const bool bVisible);
 

@@ -31,4 +31,12 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category="Blackout|Data", meta = (DefaultToSelf = "WorldContextObject"))
 	static UInventoryItemInfo* GetInventoryItemInfo(const UObject* WorldContextObject);
+
+	/**
+	 * Controls visibility of the pause game widget 
+	 * @param WorldContextObject An existing object in the world to provide context for this function
+	 * @param bVisible True if the widget must be visible. False otherwise
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Pause", meta = (DefaultToSelf = "WorldContextObject"))
+	static void TogglePauseButton(const UObject* WorldContextObject, const bool bVisible);
 };

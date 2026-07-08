@@ -36,6 +36,14 @@ public:
 	 */
 	void CloseInventoryWidget() const;
 
+	/**
+	 * Controls visibility of the pause button widget. Should be visible while traveling through the map and invisible
+	 * when the pause input action is triggered
+	 * @param bVisible True if the widget must be visible. False otherwise
+	 */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void TogglePauseButtonWidget(const bool bVisible);
+
 protected:
 	/**
 	 * The class used to create the InventoryWidgetController object

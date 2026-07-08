@@ -13,4 +13,5 @@ void ABlackoutPlayerController::BeginPlay()
 	{
 		EnhancedInputSystem->AddMappingContext(BlackoutPlayerContext, 0);
 	}
+	SetInputMode(FInputModeGameOnly());	
 }

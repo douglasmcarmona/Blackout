@@ -138,6 +138,17 @@ struct FLevelData
 };
 
 /**
+ * Notifies bound functions that the music general control has been changed
+ * @param bMusicEnabled True if the music is now enabled. False if it has been disabled
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMusicToggledSignature, const bool, bMusicEnabled);
+
+/**
+ * Notifies bound functions that the sound effects general control has been changed
+ * @param bSFXEnabled True if sound effects are now enabled. False if they have been disabled
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSFXToggledSignature, const bool, bSFXEnabled);
+/**
  * Out custom GameInstance object. Used to persist data while switching levels, such as the player's inventory and changes
  * in the level regarding dynamic actors (such as interactable actors).
  */
@@ -194,6 +205,28 @@ public:
 	 * @return True if the struct was successfully inserted into the spawned actors array. False otherwise
 	 */
 	bool AddToSpawnedActors(const FString& MapName, const FSpawnedActorData& SpawnedActor);
+
+	/**
+	 * Checks the status of music control
+	 * @return True if music is currently enabled. False otherwise
+	 */
+	bool IsMusicEnabled() const { return bIsMusicEnabled; }
+	
+	/**
+	 * Checks the status of sound effects control
+	 * @return True if sound effects are currently enabled. False otherwise
+	 */
+	bool IsSFXEnabled() const { return bIsSFXEnabled; }
+
+	/**
+	 * Flips music control value
+	 */
+	void ToggleMusic();
+	
+	/**
+	 * Flips sound effects control value
+	 */
+	void ToggleSFX();
 	
 	
 	// Saves the number of the slot where the item in player's right hand now is
@@ -206,7 +239,19 @@ public:
 	levels so that level transitions can happen with the proper consistency */
 	TMap<FString, FLevelData> LevelTransitionData;
 	
+	UPROPERTY(BlueprintAssignable)
+	FOnMusicToggledSignature OnMusicToggledDelegate;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnSFXToggledSignature OnSFXToggledDelegate;
+	
 private:
 	// The inventory's data-only representation
 	TArray<FInventorySlotData> InventoryData;
+	
+	// Controls if music is currently enabled in the game
+	bool bIsMusicEnabled = true;
+	
+	// Controls if sound effects are currently enabled in the game
+	bool bIsSFXEnabled = true;
 };

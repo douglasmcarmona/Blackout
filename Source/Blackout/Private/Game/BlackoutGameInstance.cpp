@@ -55,3 +55,15 @@ bool UBlackoutGameInstance::AddToSpawnedActors(const FString& MapName,
 	LevelData->SpawnedActorsData.AddUnique(SpawnedActor);
 	return true;
 }
+
+void UBlackoutGameInstance::ToggleMusic()
+{
+	bIsMusicEnabled = !bIsMusicEnabled;
+	OnMusicToggledDelegate.Broadcast(bIsMusicEnabled);
+}
+
+void UBlackoutGameInstance::ToggleSFX()
+{
+	bIsSFXEnabled = !bIsSFXEnabled;
+	OnSFXToggledDelegate.Broadcast(bIsSFXEnabled);
+}

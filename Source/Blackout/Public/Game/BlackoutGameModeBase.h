@@ -32,10 +32,4 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInventoryItemInfo> InventoryItemInformation;
-
-	/**
-	 * Gather all levels in the game, which can then be retrieved by name
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
 };

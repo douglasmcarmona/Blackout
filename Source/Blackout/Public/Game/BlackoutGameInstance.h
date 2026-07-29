@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Interaction/GameInstanceInterface.h"
 #include "BlackoutGameInstance.generated.h"
 
 /**
@@ -153,7 +154,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSFXToggledSignature, const bool, 
  * in the level regarding dynamic actors (such as interactable actors).
  */
 UCLASS()
-class BLACKOUT_API UBlackoutGameInstance : public UGameInstance
+class BLACKOUT_API UBlackoutGameInstance : public UGameInstance, public IGameInstanceInterface
 {
 	GENERATED_BODY()
 	
@@ -228,6 +229,9 @@ public:
 	 */
 	void ToggleSFX();
 	
+	// GameInstanceInterface override
+	virtual void TravelToMap_Implementation(const FString& MapName) override;
+	
 	
 	// Saves the number of the slot where the item in player's right hand now is
 	int32 RightHandItemInventorySlotNumber;
@@ -244,6 +248,13 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnSFXToggledSignature OnSFXToggledDelegate;
+
+protected:
+	/**
+	 * Gather all levels in the game, which can then be retrieved by name
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
 	
 private:
 	// The inventory's data-only representation

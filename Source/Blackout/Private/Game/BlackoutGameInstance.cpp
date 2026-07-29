@@ -1,7 +1,8 @@
 ﻿#include "Game/BlackoutGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 void UBlackoutGameInstance::SaveInventorySlotData(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName,
-	const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap)
+                                                  const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap)
 {
 	FInventorySlotData InventorySlotData;
 	InventorySlotData.PersistentGuid = PersistentGuid;
@@ -66,4 +67,9 @@ void UBlackoutGameInstance::ToggleSFX()
 {
 	bIsSFXEnabled = !bIsSFXEnabled;
 	OnSFXToggledDelegate.Broadcast(bIsSFXEnabled);
+}
+
+void UBlackoutGameInstance::TravelToMap_Implementation(const FString& MapName)
+{
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Maps.FindChecked(MapName));
 }

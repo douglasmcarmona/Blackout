@@ -89,7 +89,7 @@ void ABlackoutGameMode::TravelToMap(const FString& MapName)
 	
 	SavePlacedActors();
 	SaveSpawnedActors();
-	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Maps.FindChecked(MapName));
+	IGameInstanceInterface::Execute_TravelToMap(UGameplayStatics::GetGameInstance(this), MapName);
 }
 
 void ABlackoutGameMode::LoadPlacedActors(FLevelData& LevelData) const

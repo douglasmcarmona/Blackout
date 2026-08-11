@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Compliance.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BlackoutFunctionLibrary.generated.h"
 
@@ -69,5 +70,35 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category="Blackout|Audio", meta = (DefaultToSelf = "WorldContextObject"))
 	static void ToggleSFX(const UObject* WorldContextObject);
-	
+
+	/**
+	 * Handy function to return the URL of a license from its enum value
+	 * @param LicenseID The value which identifies the license
+	 * @return The URL of the license
+	 */
+	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
+	static FString& GetLicenseUrl(const ELicenseID LicenseID);
+
+	/**
+	 * Writes a new compliance metadata data structure to our data file
+	 * @param Metadata All data to be written in the file
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Compliance")
+	static void SaveAssetComplianceMetadata(UPARAM(ref) FAssetComplianceMetadata& Metadata);
+
+	/**
+	 * Reads our compliance data file into memory
+	 * @param DatabaseStruct (Output) Filled up by the function with all parsed data from the source file
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Compliance")
+	static void LoadAssetComplianceMetadata(FAssetComplianceDatabase& DatabaseStruct);
+
+	/**
+	 * Gets a specific entry from the compliance database
+	 * @param DatabaseStruct The compliance database
+	 * @param AssetID The ID of the asset data to be searched for
+	 * @return The data structure which represents the compliance data regarding the asset
+	 */
+	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
+	static FAssetComplianceMetadata FindMetdataByAssetID(FAssetComplianceDatabase DatabaseStruct, const FString& AssetID);
 };

@@ -1,0 +1,43 @@
+{
+	"database": [
+		{
+			"assetId": "TP-0001",
+			"assetName": "Flashlight",
+			"creator": "Slav3106",
+			"licenseId": "Fab",
+			"licenseUrl": "https://www.fab.com/eula",
+			"assetSource": "Fab",
+			"assetUrl": "https://fab.com/s/cf1650818637",
+			"attributionRequired": false,
+			"attributionText": "",
+			"modified": false,
+			"modificationText": ""
+		},
+		{
+			"assetId": "TP-0002",
+			"assetName": "Battery",
+			"creator": "ThunderPWN",
+			"licenseId": "CC_BY_4",
+			"licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.en",
+			"assetSource": "Fab",
+			"assetUrl": "https://fab.com/s/cc3b4087041e",
+			"attributionRequired": true,
+			"attributionText": "",
+			"modified": false,
+			"modificationText": ""
+		},
+		{
+			"assetId": "TP-0003",
+			"assetName": "Lazy Dev Abandoned Tunnel",
+			"creator": "Breakbound Dev",
+			"licenseId": "Fab",
+			"licenseUrl": "https://www.fab.com/eula",
+			"assetSource": "Fab",
+			"assetUrl": "https://fab.com/s/7b469fce462f",
+			"attributionRequired": false,
+			"attributionText": "",
+			"modified": false,
+			"modificationText": ""
+		}
+	]
+}

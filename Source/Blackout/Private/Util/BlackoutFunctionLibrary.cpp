@@ -1,9 +1,12 @@
 #include "Util/BlackoutFunctionLibrary.h"
 
+#include "JsonObjectConverter.h"
 #include "Game/BlackoutGameInstance.h"
 #include "Game/BlackoutGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/HUD/BlackoutHUD.h"
+#include "Util/Compliance.h"
+#include "Util/Json.h"
 
 UPaperNoteInfo* UBlackoutFunctionLibrary::GetPaperNoteInfo(const UObject* WorldContextObject)
 {
@@ -70,4 +73,35 @@ void UBlackoutFunctionLibrary::ToggleSFX(const UObject* WorldContextObject)
 	{
 		GameInstance->ToggleSFX();
 	}
+}
+
+FString& UBlackoutFunctionLibrary::GetLicenseUrl(const ELicenseID LicenseID)
+{
+	return LicenseUrls.FindChecked(LicenseID);
+}
+
+void UBlackoutFunctionLibrary::SaveAssetComplianceMetadata(FAssetComplianceMetadata& Metadata)
+{
+	Metadata.LicenseUrl = GetLicenseUrl(Metadata.LicenseID);
+	const FString Path = FString::Printf(TEXT("%sProduction"), *FPaths::ProjectDir());
+	FAssetComplianceDatabase DatabaseStruct;
+	LoadAssetComplianceMetadata(DatabaseStruct);
+	DatabaseStruct.Database.Add(Metadata);
+	UJson::SaveUStructAsJson<FAssetComplianceDatabase>(DatabaseStruct, Path, ASSET_COMPLIANCE_FILE);	
+}
+
+void UBlackoutFunctionLibrary::LoadAssetComplianceMetadata(FAssetComplianceDatabase& DatabaseStruct)
+{
+	const FString Path = FString::Printf(TEXT("%sProduction"), *FPaths::ProjectDir());	
+	UJson::LoadJsonAsStruct<FAssetComplianceDatabase>(DatabaseStruct, Path, ASSET_COMPLIANCE_FILE);	
+}
+
+FAssetComplianceMetadata UBlackoutFunctionLibrary::FindMetdataByAssetID(FAssetComplianceDatabase DatabaseStruct,
+	const FString& AssetID)
+{
+	for (const FAssetComplianceMetadata& Metadata : DatabaseStruct.Database)
+	{
+		if (Metadata.AssetID == AssetID) return Metadata;
+	}
+	return FAssetComplianceMetadata();
 }

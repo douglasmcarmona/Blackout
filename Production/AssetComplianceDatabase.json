@@ -5,11 +5,11 @@
 			"assetName": "Flashlight",
 			"creator": "Slav3106",
 			"licenseId": "CC_BY_4",
-			"licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.en",
+			"licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
 			"assetSource": "Fab",
 			"assetUrl": "https://fab.com/s/cf1650818637",
 			"attributionRequired": true,
-			"attributionText": "Flashlight by Slav3106",
+			"attributionText": "Flash Light by Slav3106",
 			"modified": false,
 			"modificationText": ""
 		},
@@ -18,7 +18,7 @@
 			"assetName": "Battery",
 			"creator": "ThunderPWN",
 			"licenseId": "CC_BY_4",
-			"licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.en",
+			"licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
 			"assetSource": "Fab",
 			"assetUrl": "https://fab.com/s/cc3b4087041e",
 			"attributionRequired": true,
@@ -63,7 +63,7 @@
 			"attributionRequired": true,
 			"attributionText": "Lighting Fixtures Set 1 Free by Mohit Akundi",
 			"modified": true,
-			"modificationText": "Removed all other object from original asset not used in the game"
+			"modificationText": "Removed all other objects from original asset not used in the game"
 		},
 		{
 			"assetId": "TP-0006",
@@ -181,6 +181,6 @@
 			"attributionText": "Essential Icon Pack - PC by Mypixel Studios",
 			"modified": false,
 			"modificationText": ""
-		}
+		}		
 	]
 }

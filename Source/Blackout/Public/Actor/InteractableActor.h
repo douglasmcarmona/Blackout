@@ -58,11 +58,14 @@ public:
 	// InteractionInterface override
 	virtual void SetIsIsOriginalState_Implementation(const bool bInIsInOriginalState) override;
 
+#if WITH_EDITOR
 	// Object override
 	virtual void PostDuplicate(bool bDuplicateForPIE) override;
 	
 	// Actor override
 	virtual void PostLoad() override;
+#endif
+	
 	
 	// Actor override
 	virtual void Destroyed() override;
@@ -143,9 +146,11 @@ protected:
 	TObjectPtr<UPrimitiveComponent> HighlightTarget;
 	
 private:
+#if WITH_EDITOR
 	/**
 	 * Handy function to generate the actor's PersistentGuid value
 	 */
 	void GenerateNewPersistentGuid();
+#endif
 };
 

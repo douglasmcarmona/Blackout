@@ -23,14 +23,14 @@ public:
 		FString Json;
 		FJsonObjectConverter::UStructToJsonObjectString(Struct, Json);		
 		TSharedPtr<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
-		const FString CompleteFilePath = FString::Printf(TEXT("%s/%s"), *FilePath, *FileName);
-		FFileHelper::SaveStringToFile(Json, *CompleteFilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+		const FString FullPath = FPaths::Combine(FPaths::ProjectContentDir(), FilePath, FileName);
+		FFileHelper::SaveStringToFile(Json, *FullPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
 	}
 	
 	template <typename StructType>
 	static void LoadJsonAsStruct(StructType& Struct, const FString& FilePath, const FString& FileName = FString("StructAsJson.json"))
 	{
-		const FString FullPath = FString::Printf(TEXT("%s/%s"), *FilePath, *FileName);
+		const FString FullPath = FPaths::Combine(FPaths::ProjectContentDir(), FilePath, FileName);
 		FString Json;
 		FFileHelper::LoadFileToString(Json, *FullPath);
 		FJsonObjectConverter::JsonObjectStringToUStruct(Json, &Struct);

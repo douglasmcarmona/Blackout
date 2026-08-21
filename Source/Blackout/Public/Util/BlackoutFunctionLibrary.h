@@ -8,6 +8,8 @@
 class UInventoryItemInfo;
 class UPaperNoteInfo;
 
+#define ASSET_COMPLIANCE_FILE_DIR "Production"
+
 /**
  * Our custom blueprint function library that can be called from anywhere in the project to perform arbitrary functionalities
  */
@@ -101,4 +103,12 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
 	static FAssetComplianceMetadata FindMetdataByAssetID(FAssetComplianceDatabase DatabaseStruct, const FString& AssetID);
+
+	/**
+	 * Handy function to get an in-game textual description for an ELicenseID value
+	 * @param LicenseID Which license should the description be returned of
+	 * @return The description of the enum value 
+	 */
+	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
+	static FString GetLicenseDescriptionText(const ELicenseID LicenseID);
 };

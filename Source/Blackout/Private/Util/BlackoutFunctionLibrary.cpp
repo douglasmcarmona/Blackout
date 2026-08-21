@@ -82,18 +82,16 @@ FString& UBlackoutFunctionLibrary::GetLicenseUrl(const ELicenseID LicenseID)
 
 void UBlackoutFunctionLibrary::SaveAssetComplianceMetadata(FAssetComplianceMetadata& Metadata)
 {
-	Metadata.LicenseUrl = GetLicenseUrl(Metadata.LicenseID);
-	const FString Path = FString::Printf(TEXT("%sProduction"), *FPaths::ProjectDir());
+	Metadata.LicenseUrl = GetLicenseUrl(Metadata.LicenseID);	
 	FAssetComplianceDatabase DatabaseStruct;
 	LoadAssetComplianceMetadata(DatabaseStruct);
 	DatabaseStruct.Database.Add(Metadata);
-	UJson::SaveUStructAsJson<FAssetComplianceDatabase>(DatabaseStruct, Path, ASSET_COMPLIANCE_FILE);	
+	UJson::SaveUStructAsJson<FAssetComplianceDatabase>(DatabaseStruct, TEXT(ASSET_COMPLIANCE_FILE_DIR), TEXT(ASSET_COMPLIANCE_FILE));
 }
 
 void UBlackoutFunctionLibrary::LoadAssetComplianceMetadata(FAssetComplianceDatabase& DatabaseStruct)
 {
-	const FString Path = FString::Printf(TEXT("%sProduction"), *FPaths::ProjectDir());	
-	UJson::LoadJsonAsStruct<FAssetComplianceDatabase>(DatabaseStruct, Path, ASSET_COMPLIANCE_FILE);	
+	UJson::LoadJsonAsStruct<FAssetComplianceDatabase>(DatabaseStruct, TEXT(ASSET_COMPLIANCE_FILE_DIR), TEXT(ASSET_COMPLIANCE_FILE));	
 }
 
 FAssetComplianceMetadata UBlackoutFunctionLibrary::FindMetdataByAssetID(FAssetComplianceDatabase DatabaseStruct,
@@ -104,4 +102,21 @@ FAssetComplianceMetadata UBlackoutFunctionLibrary::FindMetdataByAssetID(FAssetCo
 		if (Metadata.AssetID == AssetID) return Metadata;
 	}
 	return FAssetComplianceMetadata();
+}
+
+FString UBlackoutFunctionLibrary::GetLicenseDescriptionText(const ELicenseID LicenseID)
+{	
+	switch (LicenseID)
+	{
+		case ELicenseID::Fab:
+			return FString(TEXT("Fab Standard License"));		
+		case ELicenseID::CC_0:
+			return FString(TEXT("Creative Commons 0"));
+		case ELicenseID::CC_BY_4:
+			return FString(TEXT("Creative Commons by (Attribution)"));	
+		case ELicenseID::UE_EULA:
+			return FString(TEXT("Unreal Engine's End User License Agreement"));		
+		default:
+			return FString();
+	}	
 }

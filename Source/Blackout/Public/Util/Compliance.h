@@ -8,7 +8,7 @@
  */
 
 // Destination file of compliance asset metadata
-#define ASSET_COMPLIANCE_FILE FString("AssetComplianceDatabase.json")
+#define ASSET_COMPLIANCE_FILE "AssetComplianceDatabase.json"
 
 
 // Enumeration of all possible licenses a given asset used in the game can be licensed under 

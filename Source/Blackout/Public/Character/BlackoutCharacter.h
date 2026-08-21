@@ -74,6 +74,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsReadingNote = false;
 
+	/**
+	 * Indicates if the player has just thrown an item. Prevents player from picking up that same item mid-air
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bHasJustThrownItem = false;
+	
 protected:
 	/**
 	 * - Validates InputAction properties

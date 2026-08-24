@@ -44,6 +44,13 @@ public:
 	static void TogglePauseButton(const UObject* WorldContextObject, const bool bVisible);
 
 	/**
+	 * Controls game pausing and unpausing
+	 * @param WorldContextObject An existing object in the world to provide context for this function
+	 * @param bGamePaused True if the game has been paused. False if it's been unpaused
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Pause", meta = (DefaultToSelf = "WorldContextObject"))
+	static void ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused);
+	/**
 	 * Checks the music general control status
 	 * @param WorldContextObject An existing object in the world to provide context for this function
 	 * @return True if music is currently enabled. False otherwise

@@ -1,9 +1,8 @@
 #include "Util/BlackoutFunctionLibrary.h"
-
-#include "JsonObjectConverter.h"
 #include "Game/BlackoutGameInstance.h"
 #include "Game/BlackoutGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BlackoutPlayerController.h"
 #include "UI/HUD/BlackoutHUD.h"
 #include "Util/Compliance.h"
 #include "Util/Json.h"
@@ -35,8 +34,37 @@ void UBlackoutFunctionLibrary::TogglePauseButton(const UObject* WorldContextObje
 	
 	if (ABlackoutHUD* HUD = Cast<ABlackoutHUD>(PlayerController->GetHUD()))
 	{
-		HUD->TogglePauseButtonWidget(bVisible);
+		HUD->TogglePauseButton(bVisible);
 	}
+}
+
+void UBlackoutFunctionLibrary::ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused)
+{
+	if (!WorldContextObject) return;
+	
+	ABlackoutPlayerController* PlayerController = Cast<ABlackoutPlayerController>(UGameplayStatics::GetPlayerController(WorldContextObject, 0));
+	if (!PlayerController) return;
+	
+	ABlackoutHUD* HUD = Cast<ABlackoutHUD>(PlayerController->GetHUD());
+	if (!HUD) return;
+	
+	HUD->TogglePauseButton(!bGamePaused);
+	HUD->TogglePauseMenu(bGamePaused);	
+	
+	if (bGamePaused)
+	{
+		PlayerController->ChangeMappingContext(EMappingContext::PauseMenu);
+		PlayerController->SetInputMode(FInputModeGameAndUI());
+		
+	}
+	else
+	{
+		PlayerController->ChangeMappingContext(EMappingContext::Default);
+		PlayerController->SetInputMode(FInputModeGameOnly());
+	}
+	
+	PlayerController->SetShowMouseCursor(bGamePaused);
+	UGameplayStatics::SetGamePaused(WorldContextObject, bGamePaused);
 }
 
 bool UBlackoutFunctionLibrary::IsMusicEnabled(const UObject* WorldContextObject)

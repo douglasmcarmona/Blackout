@@ -49,7 +49,7 @@ void ABlackoutCharacter::BeginPlay()
 void ABlackoutCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bIsInventoryOpen || bIsReadingNote) return;
+	if (bIsInventoryOpen || bIsReadingNote || bHasJustThrownItem) return;
 	
 	const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, EyesightZ);
 	const FVector TraceEnd = TraceStart + GetControlRotation().Vector() * MaxInteractableDistance;

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Compliance.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BlackoutFunctionLibrary.generated.h"
 
 class UInventoryItemInfo;
 class UPaperNoteInfo;
+
+#define ASSET_COMPLIANCE_FILE_DIR "Production"
 
 /**
  * Our custom blueprint function library that can be called from anywhere in the project to perform arbitrary functionalities
@@ -41,6 +44,13 @@ public:
 	static void TogglePauseButton(const UObject* WorldContextObject, const bool bVisible);
 
 	/**
+	 * Controls game pausing and unpausing
+	 * @param WorldContextObject An existing object in the world to provide context for this function
+	 * @param bGamePaused True if the game has been paused. False if it's been unpaused
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Pause", meta = (DefaultToSelf = "WorldContextObject"))
+	static void ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused);
+	/**
 	 * Checks the music general control status
 	 * @param WorldContextObject An existing object in the world to provide context for this function
 	 * @return True if music is currently enabled. False otherwise
@@ -69,5 +79,43 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category="Blackout|Audio", meta = (DefaultToSelf = "WorldContextObject"))
 	static void ToggleSFX(const UObject* WorldContextObject);
-	
+
+	/**
+	 * Handy function to return the URL of a license from its enum value
+	 * @param LicenseID The value which identifies the license
+	 * @return The URL of the license
+	 */
+	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
+	static FString& GetLicenseUrl(const ELicenseID LicenseID);
+
+	/**
+	 * Writes a new compliance metadata data structure to our data file
+	 * @param Metadata All data to be written in the file
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Compliance")
+	static void SaveAssetComplianceMetadata(UPARAM(ref) FAssetComplianceMetadata& Metadata);
+
+	/**
+	 * Reads our compliance data file into memory
+	 * @param DatabaseStruct (Output) Filled up by the function with all parsed data from the source file
+	 */
+	UFUNCTION(BlueprintCallable, Category="Blackout|Compliance")
+	static void LoadAssetComplianceMetadata(FAssetComplianceDatabase& DatabaseStruct);
+
+	/**
+	 * Gets a specific entry from the compliance database
+	 * @param DatabaseStruct The compliance database
+	 * @param AssetID The ID of the asset data to be searched for
+	 * @return The data structure which represents the compliance data regarding the asset
+	 */
+	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
+	static FAssetComplianceMetadata FindMetdataByAssetID(FAssetComplianceDatabase DatabaseStruct, const FString& AssetID);
+
+	/**
+	 * Handy function to get an in-game textual description for an ELicenseID value
+	 * @param LicenseID Which license should the description be returned of
+	 * @return The description of the enum value 
+	 */
+	UFUNCTION(BlueprintPure, Category="Blackout|Compliance")
+	static FString GetLicenseDescriptionText(const ELicenseID LicenseID);
 };

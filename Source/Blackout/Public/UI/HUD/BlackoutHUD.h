@@ -40,11 +40,20 @@ public:
 	 * Controls visibility of the pause button widget. Should be visible while traveling through the map and invisible
 	 * when the pause input action is triggered
 	 * @param bVisible True if the widget must be visible. False otherwise
+	 */	
+	void TogglePauseButton(const bool bVisible);
+
+	/**
+	 * Controls visibility of the pause menu widget. Should be visible when the pause action is triggered and invisible
+	 * when it's triggered a second time or when the 'Resume' button is clicked on the menu
+	 * @param bVisible True if the widget must be visible. False otherwise
 	 */
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void TogglePauseButtonWidget(const bool bVisible);
+	void TogglePauseMenu(const bool bVisible); 
+	
 
 protected:
+	
+	virtual void BeginPlay() override;
 	/**
 	 * The class used to create the InventoryWidgetController object
 	 */
@@ -55,9 +64,21 @@ protected:
 	 * Used to create the InventoryWidget object
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UInventoryUserWidget> InventoryWidgetClass;	
+	TSubclassOf<UInventoryUserWidget> InventoryWidgetClass;
 
-private:
+	/**
+	 * Used to create the PauseButton widget object
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> PauseButtonWidgetClass;
+
+	/**
+	 * Used to create the PauseMenu widget object
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;	
+
+private:	
 	/**
 	 * Reference to the instantiated InventoryWidgetController object
 	 */
@@ -68,5 +89,17 @@ private:
 	 * Reference to the instantiated InventoryWidget object
 	 */
 	UPROPERTY()
-	TObjectPtr<UInventoryUserWidget> InventoryWidget;	
+	TObjectPtr<UInventoryUserWidget> InventoryWidget;
+
+	/**
+	 * Reference to the instantiated PauseMenuWidget
+	 */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> PauseMenuWidget;
+
+	/**
+	 * Reference to the instantiated PauseButtonWidget
+	 */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> PauseButtonWidget;
 };

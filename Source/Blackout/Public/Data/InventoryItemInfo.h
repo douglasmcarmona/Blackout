@@ -57,9 +57,10 @@ public:
 	 */
 	FInventoryItem* GetInventoryItemByClass(UClass* InventoryItemClass);
 	
+#if WITH_EDITOR
 	// UObject override
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-	
+#endif
 	
 private:
 	// The collection of all inventory item types in the game 

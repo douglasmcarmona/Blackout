@@ -58,14 +58,14 @@ void ABlackoutHUD::TogglePauseButton(const bool bVisible)
 	if (!PauseButtonWidget && bVisible)
 	{
 		checkf(PauseButtonWidgetClass, TEXT("PauseButtonWidgetClass uninitialized. Please set it in HUD BP"));
-		PauseButtonWidget = CreateWidget(GetWorld(), PauseButtonWidgetClass);
+		PauseButtonWidget = CreateWidget(PlayerOwner, PauseButtonWidgetClass);
 	}	
 	
 	if (bVisible)
 	{
 		PauseButtonWidget->AddToViewport();	
 	}
-	else if (PauseMenuWidget)
+	else if (PauseButtonWidget)
 	{
 		PauseButtonWidget->RemoveFromParent();	
 	}
@@ -76,7 +76,7 @@ void ABlackoutHUD::TogglePauseMenu(const bool bVisible)
 	if (!PauseMenuWidget && bVisible)
 	{
 		checkf(PauseMenuWidgetClass, TEXT("PauseMenuWidgetClass uninitialized. Please set it in HUD BP"));
-		PauseMenuWidget = CreateWidget(GetWorld(), PauseMenuWidgetClass);
+		PauseMenuWidget = CreateWidget(PlayerOwner, PauseMenuWidgetClass);
 	}
 	
 	if (bVisible)

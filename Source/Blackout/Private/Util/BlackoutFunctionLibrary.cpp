@@ -39,32 +39,9 @@ void UBlackoutFunctionLibrary::TogglePauseButton(const UObject* WorldContextObje
 }
 
 void UBlackoutFunctionLibrary::ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused)
-{
-	if (!WorldContextObject) return;
-	
-	ABlackoutPlayerController* PlayerController = Cast<ABlackoutPlayerController>(UGameplayStatics::GetPlayerController(WorldContextObject, 0));
-	if (!PlayerController) return;
-	
-	ABlackoutHUD* HUD = Cast<ABlackoutHUD>(PlayerController->GetHUD());
-	if (!HUD) return;
-	
-	HUD->TogglePauseButton(!bGamePaused);
-	HUD->TogglePauseMenu(bGamePaused);	
-	
-	if (bGamePaused)
-	{
-		PlayerController->ChangeMappingContext(EMappingContext::PauseMenu);
-		PlayerController->SetInputMode(FInputModeGameAndUI());
-		
-	}
-	else
-	{
-		PlayerController->ChangeMappingContext(EMappingContext::Default);
-		PlayerController->SetInputMode(FInputModeGameOnly());
-	}
-	
-	PlayerController->SetShowMouseCursor(bGamePaused);
-	UGameplayStatics::SetGamePaused(WorldContextObject, bGamePaused);
+{	
+	UBlackoutGameInstance* GameInstance = Cast<UBlackoutGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+	GameInstance->ToggleGamePaused(WorldContextObject, bGamePaused);
 }
 
 bool UBlackoutFunctionLibrary::IsMusicEnabled(const UObject* WorldContextObject)

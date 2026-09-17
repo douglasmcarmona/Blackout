@@ -159,6 +159,12 @@ class BLACKOUT_API UBlackoutGameInstance : public UGameInstance, public IGameIns
 	GENERATED_BODY()
 	
 public:
+	// GameInstance override
+	virtual void Init() override;
+	
+	// GameInstance override
+	virtual void Shutdown() override;
+	
 	/**
 	 * Keeps track of an inventory item internally. Used later to restore the item into the inventory after switching levels
 	 * @param PersistentGuid The unique identifier of the item, obtained from the actor which it represents
@@ -232,6 +238,12 @@ public:
 	// GameInstanceInterface override
 	virtual void TravelToMap_Implementation(const FString& MapName) override;
 	
+	/**
+	 * Controls game pausing and unpausing
+	 * @param WorldContextObject An existing object in the world to provide context for this function
+	 * @param bGamePaused True if the game has been paused. False if it's been unpaused
+	 */
+	void ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused) const;	
 	
 	// Saves the number of the slot where the item in player's right hand now is
 	int32 RightHandItemInventorySlotNumber;
@@ -257,6 +269,9 @@ protected:
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
 	
 private:
+	UFUNCTION()
+	void OnApplicationActivationChanged(bool bIsActive) const;
+	
 	// The inventory's data-only representation
 	TArray<FInventorySlotData> InventoryData;
 	

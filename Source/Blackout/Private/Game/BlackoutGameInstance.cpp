@@ -1,5 +1,19 @@
 ﻿#include "Game/BlackoutGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BlackoutPlayerController.h"
+#include "Framework/Application/SlateApplication.h"
+#include "UI/HUD/BlackoutHUD.h"
+
+void UBlackoutGameInstance::Init()
+{
+	Super::Init();
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get()
+			.OnApplicationActivationStateChanged()
+			.AddUObject(this, &UBlackoutGameInstance::OnApplicationActivationChanged);		
+	}	
+}
 
 void UBlackoutGameInstance::SaveInventorySlotData(const FGuid& PersistentGuid, const int32 SlotNumber, const FString& ItemName,
                                                   const TMap<FString, int32>& IntegerMap, const TMap<FString, float>& FloatMap, const TMap<FString, bool>& BoolMap)
@@ -72,4 +86,59 @@ void UBlackoutGameInstance::ToggleSFX()
 void UBlackoutGameInstance::TravelToMap_Implementation(const FString& MapName)
 {
 	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Maps.FindChecked(MapName));
+}
+
+void UBlackoutGameInstance::ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused) const
+{	
+	ABlackoutPlayerController* PlayerController = Cast<ABlackoutPlayerController>(UGameplayStatics::GetPlayerController(WorldContextObject, 0));
+	if (!PlayerController) return;
+	
+	ABlackoutHUD* HUD = Cast<ABlackoutHUD>(PlayerController->GetHUD());
+	if (!HUD) return;
+	
+	HUD->TogglePauseButton(!bGamePaused);
+	HUD->TogglePauseMenu(bGamePaused);	
+	
+	if (bGamePaused)
+	{
+		PlayerController->ChangeMappingContext(EMappingContext::PauseMenu);
+		PlayerController->SetInputMode(FInputModeGameAndUI());		
+	}
+	else
+	{
+		PlayerController->ChangeMappingContext(EMappingContext::Default);
+		PlayerController->SetInputMode(FInputModeGameOnly());
+	}
+	
+	PlayerController->SetShowMouseCursor(bGamePaused);
+	UGameplayStatics::SetGamePaused(WorldContextObject, bGamePaused);
+}
+
+void UBlackoutGameInstance::OnApplicationActivationChanged(bool bIsActive) const
+{
+	const UWorld* World = GetWorld();
+	if (!World) return;
+	
+	if (!bIsActive && !UGameplayStatics::IsGamePaused(World))
+	{
+		ToggleGamePaused(World, true);
+	}
+	else if (bIsActive && UGameplayStatics::IsGamePaused(World))
+	{		
+		FInputModeGameAndUI InputMode;
+		InputMode.SetHideCursorDuringCapture(false);
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+		GetFirstLocalPlayerController(World)->SetInputMode(InputMode);
+	}
+}
+
+void UBlackoutGameInstance::Shutdown()
+{
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get()
+			.OnApplicationActivationStateChanged()
+			.RemoveAll(this);
+	}
+	Super::Shutdown();
 }

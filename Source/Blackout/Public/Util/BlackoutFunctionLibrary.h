@@ -49,7 +49,7 @@ public:
 	 * @param bGamePaused True if the game has been paused. False if it's been unpaused
 	 */
 	UFUNCTION(BlueprintCallable, Category="Blackout|Pause", meta = (DefaultToSelf = "WorldContextObject"))
-	static void ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused);
+	void ToggleGamePaused(const UObject* WorldContextObject, const bool bGamePaused);
 	/**
 	 * Checks the music general control status
 	 * @param WorldContextObject An existing object in the world to provide context for this function

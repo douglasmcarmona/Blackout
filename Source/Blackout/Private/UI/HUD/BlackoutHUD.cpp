@@ -81,7 +81,7 @@ void ABlackoutHUD::TogglePauseMenu(const bool bVisible)
 	
 	if (bVisible)
 	{
-		PauseMenuWidget->AddToViewport();
+		PauseMenuWidget->AddToViewport(10);
 	}
 	else if (PauseMenuWidget)
 	{
